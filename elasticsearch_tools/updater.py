@@ -5,17 +5,17 @@ import re
 
 
 class ElasticsearchQuery(object):
-    '''
+    """
     Class to hold information for common index access
-    '''
+    """
 
     @staticmethod
     def ceda_eo_manifest():
-        '''
+        """
         Method returns parameters and query needed by Elasticsearch.check_files_existence() in order to work with
         ceda-eo using the manifest file to search.
         :return:
-        '''
+        """
         query = json.dumps({
             "_source": {
                 "include": [
@@ -40,11 +40,11 @@ class ElasticsearchQuery(object):
 
     @staticmethod
     def ceda_eo_data_file():
-        '''
+        """
         Method returns parameters and query needed by Elasticsearch.check_files_existence() in order to work with
         ceda-eo using the datafile to search.
         :return:
-        '''
+        """
 
         query = json.dumps({"query": {"bool": {"must": {"match": {"file.directory": "<dirname>"}},
                                                           "filter": {
@@ -57,13 +57,13 @@ class ElasticsearchQuery(object):
 
     @staticmethod
     def ceda_fbs():
-        '''
+        """
         Method returns parameters and query needed by Elasticsearch.check_files_existence() in order to work with
         ceda-fbs.
         :return:
             param_func: The function which will be used by the template renderer
             query
-        '''
+        """
         query = json.dumps({"query": {"bool": {"must": {"match": {"info.directory": "<dirname>"}},
                                                           "filter": {
                                                               "term": {"info.name": "<filename>"}}}}})
@@ -120,9 +120,6 @@ class ElasticsearchUpdater(object):
         """
 
         # Set defaults
-        file_count = 0
-        scroll_count = 0
-        multi_search_query = ""
         file_in_index = {"True": [], "False": []}
 
         # Return if no file list has been provided
@@ -176,7 +173,6 @@ class ElasticsearchUpdater(object):
         return query_list
 
     def gen_bulk_update_json(self, querytemp, paramfunc, input_list, blocksize):
-
         """
         Takes a list and creates an Elasticsearch bulk update query with the desired blocksize.
         The query is passed in using querytemp and the paramfunc defines the parameters which
@@ -276,7 +272,7 @@ class ElasticsearchUpdater(object):
         return output
 
     def update_location(self, file_list, params, search_query, on_disk, threshold=800):
-        '''
+        """
         Currently only works with the ceda-eo index.
 
         :param file_list: List of file paths to update
@@ -285,7 +281,7 @@ class ElasticsearchUpdater(object):
         :param on_disk: Boolean. Sets location value to on_disk or on_tape
 
         :return: 1. Summary string. 2. Result from the bulk API.
-        '''
+        """
 
         # set location
         if on_disk:

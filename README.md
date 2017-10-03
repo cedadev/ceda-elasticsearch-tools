@@ -6,7 +6,8 @@ speed and limit API calls.
 
 ## Installation
 
-pip install git+https://github.com/cedadev/ceda-elasticsearch-tools.git
+    pip install git+https://github.com/cedadev/ceda-elasticsearch-tools.git
 
 ## Importing
-from elasticsearch_tools.update import *
+    from elasticsearch_tools.update import *
+
