@@ -5,7 +5,7 @@ Updates the file location on the target elasticsearch index using the NLA as a b
 To be used as a command line tool.
 
 Usage:
-    file_on_tape.py <index> [--host <host>] [--port <port>]
+    file_on_tape.py INDEX [--host HOST] [--port PORT]
     file_on_tape.py --version
 
 Options:
@@ -46,14 +46,14 @@ def main():
     if not args["--host"]:
         host = "jasmin-es1.ceda.ac.uk"
     else:
-        host = args["<host>"]
+        host = args["HOST"]
 
     if not args["--port"]:
         port = 9200
     else:
-        port = args["<port>"]
+        port = args["PORT"]
 
-    index = args["<index>"]
+    index = args["INDEX"]
 
     print "Script settings. ElasticSearch index: {} host: {} port: {}".format(index, host, port)
 

@@ -78,6 +78,7 @@ setup(
     entry_points={
         'console_scripts': [
             'file_on_tape.py=ceda_elasticsearch_tools.cmdline.file_on_tape:main',
+            'update_md5.py=ceda_elasticsearch_tools.cmdline.update_md5:main',
         ],
     },
 
