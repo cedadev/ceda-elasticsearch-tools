@@ -36,6 +36,7 @@ the NLA itself.
 #### Usage
 
     file_on_tape.py <index> [--host HOST] [--port PORT]
+    
     Options:
     -h --help   Show this screen.
     --version   Show version.

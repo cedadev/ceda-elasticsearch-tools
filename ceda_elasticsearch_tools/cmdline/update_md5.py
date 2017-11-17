@@ -24,7 +24,7 @@ Options:
 """
 from docopt import docopt
 from ceda_elasticsearch_tools.core import log_reader
-from ceda_elasticsearch_tools.cre import updater
+from ceda_elasticsearch_tools.core import updater
 from datetime import datetime
 import os, logging
 
