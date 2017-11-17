@@ -3,8 +3,8 @@ Feed in a list of file paths.
 
 Usage:
     spot_checker.py --help
-    spot_checker --version
-    spot_checker
+    spot_checker.py --version
+    spot_checker.py
                    (-f FILE         | --file FILE     )
                    (-o OUTPUT       | --output OUTPUT )
                    (-i INDEX        | --index   INDEX )
@@ -100,7 +100,7 @@ def process_list(es_connection, file_list, query_list, config):
 
     # Send output to file
     output_dir = config["OUTPUT"]
-    output_name = config["FILE"].split(".txt")[0] + "_log.txt"
+    output_name = os.path.basename(config["FILE"]).split(".txt")[0] + "_log.txt"
 
     with open(os.path.join(output_dir,output_name),'w') as output:
         output.write("Summary: Total Files in Spot: {} Total Indexed: {} Total Missing: {} Percentage Missing: {:.2f}% \n".format(total_files, total_in, total_out, percent_missing))
@@ -114,6 +114,8 @@ def get_args(config):
 
     if not config["BLOCKSIZE"]:
         config["BLOCKSIZE"] = 800
+
+    config["PORT"] = 9200
 
     return config
 
@@ -141,7 +143,7 @@ def main():
     # Open connection with elasticsearch
     es_conn = es_connection(config["HOSTNAME"],config["PORT"])
 
-    with open(args["FILE"],"r") as input_file:
+    with open(config["FILE"],"r") as input_file:
         filelist = input_file.readlines()
         query_list = make_query(filelist, config["BLOCKSIZE"])
 

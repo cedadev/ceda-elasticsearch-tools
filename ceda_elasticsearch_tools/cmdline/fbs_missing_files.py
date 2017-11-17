@@ -3,8 +3,8 @@ Submits jobs to run on lotus, monitors progress and prints a summary table at th
 
 Usage:
     fbs_missing_files.py --help
-    fbs_missing_files --version
-    fbs_missing_files
+    fbs_missing_files.py --version
+    fbs_missing_files.py
                    (-d DIR         | --directory DIR     )
                    (-o OUTPUT       | --output OUTPUT )
                    (-i INDEX        | --index   INDEX )
@@ -30,6 +30,7 @@ from ceda_elasticsearch_tools.core import util
 import subprocess
 from cmdline import __version__
 from time import sleep
+from tqdm import tqdm
 
 
 
@@ -40,9 +41,13 @@ SCRIPT_DIR = os.path.realpath(os.path.dirname(__file__))
 
 def submit_jobs_to_lotus(filelist, config):
 
-    for file in filelist:
-        command = "python {}/spot_checker.py -f {} -o  {} -i {}".format(
-            SCRIPT_DIR, file, config["OUTPUT"], config["INDEX"])
+    for file in tqdm(filelist, desc="Submitting to Lotus" ):
+        filepath = os.path.join(config["DIR"],file)
+
+        task = "python {}/spot_checker.py -f {} -o  {} -i {}".format(
+            SCRIPT_DIR, filepath, config["OUTPUT"], config["INDEX"])
+
+        command = util._make_bsub_command(task)
 
         print "executng : %s" % (command)
         subprocess.call(command, shell=True)

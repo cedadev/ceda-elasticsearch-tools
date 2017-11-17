@@ -17,26 +17,14 @@ def get_number_of_submitted_lotus_tasks():
         num_of_running_tasks = 0
     elif command_output.startswith(non_empty_task_queue_string):
         num_of_running_tasks = command_output.count("\n") -1
-    else:
-        num_of_running_tasks = max_number_of_tasks_to_submit
 
     return num_of_running_tasks
 
-def sanitise_args(config):
-    """
-    Sanitise command-line configuration.
 
-    :param config: Config dictionary (from docopt)
-    :returns: Config dictionary with all keys stripped of '<' '>' and '--'
-    """
-    sane_conf = {}
-    for key, value in config.iteritems():
-        if value is not None:
-            key = key.lstrip("-><").rstrip("><")
-            sane_conf[key] = value
-
-
-    return sane_conf
+def _make_bsub_command(task):
+    "Construct bsub command for task and return it."
+    command = "bsub -q par-single -W 48:00 %s" % task
+    return command
 
 
 class ProgressBar(object):
