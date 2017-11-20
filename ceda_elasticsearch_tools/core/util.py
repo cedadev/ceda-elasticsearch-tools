@@ -15,7 +15,7 @@ def get_number_of_submitted_lotus_tasks():
 
     if command_output == empty_task_queue_string:
         num_of_running_tasks = 0
-    elif command_output.startswith(non_empty_task_queue_string):
+    else:
         num_of_running_tasks = command_output.count("\n") -1
 
     return num_of_running_tasks
@@ -33,7 +33,7 @@ class ProgressBar(object):
         self.endvalue = endvalue
         self.label = label
         self.bar_length = bar_length
-        self.start = None
+        self.start = datetime.now()
 
     def est_time(self, progress):
         """
@@ -61,8 +61,6 @@ class ProgressBar(object):
         """
         :param value: The current progress
         """
-        if not self.start:
-            self.start = datetime.now()
 
         percent = float(value) / self.endvalue
         elapsed, time_remain = self.est_time(percent)
@@ -70,7 +68,7 @@ class ProgressBar(object):
         progress = '#' * int(round(percent * self.bar_length))
         spaces = ' ' * (self.bar_length - len(progress))
 
-        sys.stdout.write("\r{0}: [{1}] {2}% ({3}/{4})".format(self.label, progress + spaces, int(round(percent * 100)), elapsed, time_remain))
+        sys.stdout.write("\r{0}: [{1}] {2}% ({3}/{4})".format(self.label, progress + spaces, round(percent * 100,1), elapsed, time_remain))
         sys.stdout.flush()
 
     def complete(self):

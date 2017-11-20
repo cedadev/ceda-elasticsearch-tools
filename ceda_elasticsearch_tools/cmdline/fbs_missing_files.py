@@ -10,6 +10,7 @@ Usage:
                    (-i INDEX        | --index   INDEX )
                    [-h HOSTNAME     | --hostname HOSTNAME ]
                    [-b BLOCKSIZE    | --blocksize BLOCKSIZE ]
+                   [--nolotus                               ]
 
 
 Options:
@@ -31,7 +32,7 @@ import subprocess
 from cmdline import __version__
 from time import sleep
 from tqdm import tqdm
-
+from datetime import datetime
 
 
 
@@ -47,9 +48,14 @@ def submit_jobs_to_lotus(filelist, config):
         task = "python {}/spot_checker.py -f {} -o  {} -i {}".format(
             SCRIPT_DIR, filepath, config["OUTPUT"], config["INDEX"])
 
+        if config["HOSTNAME"]:
+            task += " -h {}".format(config["HOSTNAME"])
+
+        if config["BLOCKSIZE"]:
+            task += " -b {}".format(config["BLOCKSIZE"])
+
         command = util._make_bsub_command(task)
 
-        print "executng : %s" % (command)
         subprocess.call(command, shell=True)
 
 
@@ -75,19 +81,24 @@ def generate_summary(config):
 
 
 def main():
+    # Parse the command line arguments
     config = docopt(__doc__, version=__version__)
 
-    files = os.listdir(config["DIR"])
-    total_files = len(files)
+    if not config["--nolotus"]:
+        # If --nolotus flag provided, skip the processing phase and generate the summary table.
 
-    submit_jobs_to_lotus(files,config)
+        files = os.listdir(config["DIR"])
+        total_files = len(files)
+        pb = util.ProgressBar(total_files, label="Running jobs")
 
-    pb = util.ProgressBar(total_files,label="Running jobs")
-    remaining_jobs = util.get_number_of_submitted_lotus_tasks()
-
-    while remaining_jobs > 0:
-        pb.running(total_files-remaining_jobs)
-        sleep(60)
+        submit_jobs_to_lotus(files,config)
         remaining_jobs = util.get_number_of_submitted_lotus_tasks()
 
-    pb.complete()
+        while remaining_jobs > 0:
+            pb.running(total_files-remaining_jobs)
+            sleep(5)
+            remaining_jobs = util.get_number_of_submitted_lotus_tasks()
+
+        pb.complete()
+
+    generate_summary(config)
