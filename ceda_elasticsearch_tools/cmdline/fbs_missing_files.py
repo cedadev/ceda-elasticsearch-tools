@@ -10,7 +10,11 @@ Usage:
                    (-i INDEX        | --index   INDEX )
                    [-h HOSTNAME     | --hostname HOSTNAME ]
                    [-b BLOCKSIZE    | --blocksize BLOCKSIZE ]
-                   [--nolotus                               ]
+    fbs_missing_files.py    (-o OUTPUT | -output OUTPUT)
+                            (--report )
+                            [ --missing MISSING_FILE ]
+    fbs_missing_files.py    (-o OUTPUT | -output OUTPUT)
+                            (--missing MISSING_FILE )
 
 
 Options:
@@ -21,6 +25,8 @@ Options:
     -i  --index         Elasticsearch index to test.
     -h  --hostname      Elasticsearch host to query [default: jasmin-es1.ceda.ac.uk]
     -b  --blocksize     Number of files to chunk into bulk query [default: 800]
+    --report            Run the final report step without submitting jobs to lotus
+    --missing           File name to put list of missing documents from the scan
 """
 from docopt import docopt
 
@@ -29,7 +35,7 @@ import re
 import os
 from ceda_elasticsearch_tools.core import util
 import subprocess
-from cmdline import __version__
+from ceda_elasticsearch_tools.cmdline import __version__
 from time import sleep
 from tqdm import tqdm
 from datetime import datetime
@@ -77,14 +83,35 @@ def generate_summary(config):
 
     # Display table and print totals
     print tabulate(data, headers=["Spot","Files in Spot","Indexed","Missing","Percent Missing"])
-    print "Total Files: {} Total Indexed: {} Total Missing: {}".format(sum([x[1] for x in data]),sum([x[2] for x in data]),sum([x[3] for x in data]))
+    total = sum([x[1] for x in data])
+    indexed = sum([x[2] for x in data])
+    missing = sum([x[3] for x in data])
+    percent_missing = round((float(missing)/total)*100,2)
+    print "Total Files: {} Total Indexed: {} Total Missing: {} Percent Missing: {}".format(total, indexed, missing, percent_missing)
 
+def create_missing_list(config):
+    print "Generating missing files list: {}".format(config["MISSING_FILE"])
+    missing_files = []
+    for file in os.listdir(config["OUTPUT"]):
+        with open(os.path.join(config["OUTPUT"], file)) as log:
+            missing_files += log.readlines()[1:]
+
+    with open(config['MISSING_FILE'], 'w') as missing_log:
+        missing_log.writelines(missing_files)
+
+def nolotus(config):
+    if config["--report"]:
+        return True
+    elif config["--missing"]:
+        return True
+    else:
+        return False
 
 def main():
     # Parse the command line arguments
     config = docopt(__doc__, version=__version__)
 
-    if not config["--nolotus"]:
+    if not nolotus(config):
         # If --nolotus flag provided, skip the processing phase and generate the summary table.
 
         files = os.listdir(config["DIR"])
@@ -101,4 +128,11 @@ def main():
 
         pb.complete()
 
-    generate_summary(config)
+        generate_summary(config)
+        
+    if config["--report"]:
+        generate_summary(config)
+
+    if config["MISSING_FILE"]:
+        create_missing_list(config)
+

@@ -124,7 +124,6 @@ class DepositLog(object):
     """
     log_dir = "/badc/ARCHIVE_INFO/deposit_logs"
     file_list = []
-    log_list = []
 
     def __iter__(self):
         for file in self.file_list:
@@ -149,8 +148,8 @@ class DepositLog(object):
         self.file_list = []
 
         if log_filename is None:
-            # If no log file provided, use the latest log file.
-            log_filename = get_latest_log(self.log_dir, "deposit_ingest1.")
+            # If no log file provided, use the penultimate log file. eg. Most recent complete log file.
+            log_filename = sorted([dr for dr in os.listdir(self.log_dir) if dr.startswith('deposit_ingest1.')])[-2]
 
         with open(os.path.join(self.log_dir, log_filename)) as reader:
             # date regex
@@ -165,6 +164,12 @@ class DepositLog(object):
                     self.file_list.append(filepath)
 
         return self.file_list
+
+    def write_filelist(self, destination):
+        output = [x + "\n" for x in self.file_list]
+        with open(destination,'w') as writer:
+            writer.writelines(output)
+
 
     def generate_md5(self, file):
         """

@@ -84,6 +84,7 @@ setup(
             'update_md5.py=ceda_elasticsearch_tools.cmdline.update_md5:main',
             'fbs_missing_files.py=ceda_elasticsearch_tools.cmdline.fbs_missing_files:main',
             'spot_checker.py=ceda_elasticsearch_tools.cmdline.spot_checker:main',
+            'deposit.py=ceda_elasticsearch_tools.cmdline.deposit:main',
         ],
     },
 

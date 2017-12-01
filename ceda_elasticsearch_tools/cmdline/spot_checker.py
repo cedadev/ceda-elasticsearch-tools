@@ -27,7 +27,7 @@ from docopt import docopt
 import os
 import simplejson as json
 from elasticsearch import Elasticsearch
-from cmdline import __version__
+from ceda_elasticsearch_tools.cmdline import __version__
 
 
 def es_connection(host="jasmin-es1.ceda.ac.uk", port=9200):
@@ -83,7 +83,7 @@ def process_list(es_connection, file_list, query_list, config):
     scroll_count = 0
 
     for mquery in query_list:
-        results = es_connection.msearch(index="ceda-level-1", body=mquery)
+        results = es_connection.msearch(index="ceda-level-1", body=mquery, request_timeout=60 )
 
         for i, response in enumerate(results["responses"]):
             if response["hits"]["total"] > 0:
