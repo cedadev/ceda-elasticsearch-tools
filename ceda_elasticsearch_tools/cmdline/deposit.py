@@ -37,7 +37,7 @@ def setup_logging(config):
 
     logger = logging.getLogger(__name__)
     handler = logging.FileHandler(os.path.join(config['LOGDIR'], 'elasticsearch_deposit_cron.log' ))
-    formatter = logging.Formatter('%(levelname)s %(asctime)s $(names)s %(message)s')
+    formatter = logging.Formatter('%(levelname)s %(asctime)s $(name)s %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.setLevel(logging.DEBUG)
