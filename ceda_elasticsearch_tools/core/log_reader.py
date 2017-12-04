@@ -124,21 +124,9 @@ class DepositLog(object):
     """
     log_dir = "/badc/ARCHIVE_INFO/deposit_logs"
     file_list = []
+    filename = None
 
-    def __iter__(self):
-        for file in self.file_list:
-            yield file
-
-    def __len__(self):
-        return len(self.file_list)
-
-    def __getitem__(self, index):
-        return self.file_list[index]
-
-    # def __str__(self):
-    #     return self.file_list
-
-    def read_log(self, log_filename=None):
+    def __init__(self, log_filename=None):
         """
         Reads the deposit log into memory and creates a list if newly deposited files as part of the object.
 
@@ -150,6 +138,8 @@ class DepositLog(object):
         if log_filename is None:
             # If no log file provided, use the penultimate log file. eg. Most recent complete log file.
             log_filename = sorted([dr for dr in os.listdir(self.log_dir) if dr.startswith('deposit_ingest1.')])[-2]
+
+        self.filename = log_filename
 
         with open(os.path.join(self.log_dir, log_filename)) as reader:
             # date regex
@@ -163,6 +153,17 @@ class DepositLog(object):
                     date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.file_list.append(filepath)
 
+    def __iter__(self):
+        for file in self.file_list:
+            yield file
+
+    def __len__(self):
+        return len(self.file_list)
+
+    def __getitem__(self, index):
+        return self.file_list[index]
+
+    def read_log(self):
         return self.file_list
 
     def write_filelist(self, destination):
