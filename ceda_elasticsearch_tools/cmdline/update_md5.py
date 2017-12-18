@@ -55,14 +55,19 @@ def main():
     logging.basicConfig(filename=os.path.join(logging_path, log_name), level=logging.WARNING)
 
     spots = log_reader.SpotMapping()
+
+    print "Updating MD5 checksums for records in {} spots".format(len(spots))
+
     update = updater.ElasticsearchUpdater(index=index, host=host, port=port)
 
     begin = datetime.now()
     for spot in spots:
-        start = datetime.now()
-        update.get_md5_bulk_update_from_spotlog(spot_name=spot, spotmapobj=spots, log_base_dir=logging_path,
-                                                update=True)
-        print "Spot: %s took: %s to analyse." % (spot, (datetime.now() - start))
+        # start = datetime.now()
+        spot_base = spots.get_archive_root(spot)
+        update.update_md5(spot, spot_base)
+        # update.get_md5_bulk_update_from_spotlog(spot_name=spot, spotmapobj=spots, log_base_dir=logging_path,
+        #                                         update=True)
+        # print "Spot: %s took: %s to analyse." % (spot, (datetime.now() - start))
 
     print "Whole operation took: %s" % (datetime.now() - begin)
 

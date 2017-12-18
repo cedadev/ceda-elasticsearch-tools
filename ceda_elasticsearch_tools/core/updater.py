@@ -2,6 +2,8 @@ from elasticsearch import Elasticsearch
 import os
 import simplejson as json
 import re
+from ceda_elasticsearch_tools.core.log_reader import MD5LogFile
+from datetime import datetime
 
 
 class ElasticsearchQuery(object):
@@ -298,6 +300,10 @@ class ElasticsearchUpdater(object):
         # Only update those files which are contained in the target index.
         files_to_update = index_test["True"]
 
+        if len(files_to_update) == 0:
+            return "No files to update"
+
+
         # create update json and update location
         update_json = ""
         result = []
@@ -325,3 +331,39 @@ class ElasticsearchUpdater(object):
                                                                )
 
         return summary_string, result
+
+    def update_md5(self, spot_name, spot_path, threshold=800):
+
+        spotlog = MD5LogFile(spot_name, spot_path)
+        file_list = spotlog.as_list()
+
+        param_func, query_tmpl = ElasticsearchQuery.ceda_fbs()
+        result = self.check_files_existence(param_func, query_tmpl, file_list, raw_resp=True, threshold=threshold)
+
+        files_in = result["True"]
+
+        # Check md5s
+        update_total = 0
+        md5_json = ""
+        for file in files_in:
+            file_info = file[0]["_source"]["info"]
+            filepath = os.path.join(file_info["directory"], file_info["name"])
+
+            if file_info["md5"] != spotlog.get_md5(filepath):
+                update_total += 1
+
+                id = file[0]["_id"]
+                index = json.dumps({"update": {"_id": id, "_type": "file"}}) + "\n"
+                md5_field = json.dumps({"source": {"doc": {"info": {"md5": spotlog.get_md5(filepath)}}}}) + "\n"
+                md5_json += index + md5_field
+
+            if update_total > threshold:
+                self.make_bulk_update(md5_json)
+                md5_json = ""
+                update_total = 0
+
+        if md5_json:
+            self.make_bulk_update(md5_json)
+
+
+

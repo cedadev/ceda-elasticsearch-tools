@@ -83,7 +83,7 @@ def process_list(es_connection, file_list, query_list, config):
     scroll_count = 0
 
     for mquery in query_list:
-        results = es_connection.msearch(index="ceda-level-1", body=mquery, request_timeout=60 )
+        results = es_connection.msearch(index="ceda-level-1", body=mquery, request_timeout=120 )
 
         for i, response in enumerate(results["responses"]):
             if response["hits"]["total"] > 0:

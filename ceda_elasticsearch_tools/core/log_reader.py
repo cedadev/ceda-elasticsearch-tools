@@ -38,6 +38,9 @@ class SpotMapping(object):
         for k in self.spot2pathmapping.keys():
             yield k
 
+    def __len__(self):
+        return len(self.spot2pathmapping)
+
     def get_archive_root(self, key):
         """
 
@@ -80,6 +83,9 @@ class MD5LogFile(object):
         log_dir = "/datacentre/stats/checkm"
         spot_dir = os.path.join(log_dir, spot)
 
+        if not os.path.exists(spot_dir):
+            return
+
         # Take the spot directory and find the latest log file.
         latest_log_file = get_latest_log(spot_dir, "checkm.")
 
@@ -99,6 +105,12 @@ class MD5LogFile(object):
 
     def __len__(self):
         return len(self.md5s)
+
+    def __iter__(self):
+        return iter(self.md5s)
+
+    def __getitem__(self, index):
+        return self.md5s.keys()[index]
 
     def as_list(self):
         return list(self.md5s)
