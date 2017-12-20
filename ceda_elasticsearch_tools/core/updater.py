@@ -2,8 +2,10 @@ from elasticsearch import Elasticsearch
 import os
 import simplejson as json
 import re
-from ceda_elasticsearch_tools.core.log_reader import MD5LogFile
+import logging
+from log_reader import MD5LogFile
 from datetime import datetime
+import util
 
 
 class ElasticsearchQuery(object):
@@ -20,7 +22,7 @@ class ElasticsearchQuery(object):
         """
         query = json.dumps({
             "_source": {
-                "include": [
+                "includes": [
                     "file"
                 ]
             },
@@ -28,7 +30,7 @@ class ElasticsearchQuery(object):
                 "bool": {
                     "must": {
                         "match": {
-                            "file.path.raw": "<filename>"
+                            "file.path.raw": "<full_path>"
                         }
                     }
                 }
@@ -36,7 +38,7 @@ class ElasticsearchQuery(object):
         })
 
         def param_func(item):
-            return {"filename": os.path.basename(item), "dirname": os.path.dirname(item)}
+            return {"filename": os.path.basename(item), "dirname": os.path.dirname(item), "full_path": item}
 
         return param_func, query
 
@@ -247,9 +249,9 @@ class ElasticsearchUpdater(object):
         scroll_count = 0
         for mquery in msearchquery_list:
 
-            results = self.es.msearch(index=self.index, body=mquery)
+            results = self.es.msearch(index=self.index, body=mquery, request_timeout=60)
 
-            if raw_resp:
+            if results:
                 for i, response in enumerate(results["responses"]):
                     if raw_resp:
                         # Append the raw ElasticSearch response where there is data.
@@ -334,36 +336,54 @@ class ElasticsearchUpdater(object):
 
     def update_md5(self, spot_name, spot_path, threshold=800):
 
+        logger = logging.getLogger(__name__)
+        logging.getLogger('elasticsearch').setLevel(logging.WARNING)
+
+
         spotlog = MD5LogFile(spot_name, spot_path)
         file_list = spotlog.as_list()
+
+        logger.info("Spot: {} contains {} files.".format(spot_path, len(spotlog)))
 
         param_func, query_tmpl = ElasticsearchQuery.ceda_fbs()
         result = self.check_files_existence(param_func, query_tmpl, file_list, raw_resp=True, threshold=threshold)
 
+        logger.info("Spot: {}. Files in index: {}. Files not in: {}. Percentage in: {}%".format(
+            spot_path,
+            len(result["True"]),
+            len(result["False"]),
+            util.percent(len(spotlog),len(result["True"]))
+            )
+        )
         files_in = result["True"]
 
         # Check md5s
         update_total = 0
         md5_json = ""
-        for file in files_in:
-            file_info = file[0]["_source"]["info"]
-            filepath = os.path.join(file_info["directory"], file_info["name"])
 
-            if file_info["md5"] != spotlog.get_md5(filepath):
-                update_total += 1
+        try:
+            for file in files_in:
+                file_info = file[0]["_source"]["info"]
+                filepath = os.path.join(file_info["directory"], file_info["name"])
 
-                id = file[0]["_id"]
-                index = json.dumps({"update": {"_id": id, "_type": "file"}}) + "\n"
-                md5_field = json.dumps({"source": {"doc": {"info": {"md5": spotlog.get_md5(filepath)}}}}) + "\n"
-                md5_json += index + md5_field
+                if file_info["md5"] != spotlog.get_md5(filepath):
+                    update_total += 1
 
-            if update_total > threshold:
+                    id = file[0]["_id"]
+                    index = json.dumps({"update": {"_id": id, "_type": "file"}}) + "\n"
+                    md5_field = json.dumps({"source": {"doc": {"info": {"md5": spotlog.get_md5(filepath)}}}}) + "\n"
+                    md5_json += index + md5_field
+
+                if update_total > threshold:
+                    self.make_bulk_update(md5_json)
+                    md5_json = ""
+                    update_total = 0
+
+            if md5_json:
                 self.make_bulk_update(md5_json)
-                md5_json = ""
-                update_total = 0
 
-        if md5_json:
-            self.make_bulk_update(md5_json)
+        except Exception, msg:
+            logger.error(msg)
 
 
 

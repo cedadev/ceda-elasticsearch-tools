@@ -35,8 +35,7 @@ class SpotMapping(object):
                 self.path2spotmapping[path] = spot
 
     def __iter__(self):
-        for k in self.spot2pathmapping.keys():
-            yield k
+        return iter(self.spot2pathmapping)
 
     def __len__(self):
         return len(self.spot2pathmapping)

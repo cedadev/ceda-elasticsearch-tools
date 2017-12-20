@@ -85,6 +85,7 @@ setup(
             'fbs_missing_files.py=ceda_elasticsearch_tools.cmdline.fbs_missing_files:main',
             'spot_checker.py=ceda_elasticsearch_tools.cmdline.spot_checker:main',
             'fbs_live_index=ceda_elasticsearch_tools.cmdline.deposit:main',
+            'coverage_test=ceda_elasticsearch_tools.cmdline.ceda_eo.coverage_test:main'
         ],
     },
 

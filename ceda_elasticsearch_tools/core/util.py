@@ -26,6 +26,13 @@ def _make_bsub_command(task):
     command = "bsub -q par-single -W 48:00 %s" % task
     return command
 
+def percent(total, value):
+    if total == 0:
+        return 100
+    elif value == 0:
+        return 0
+    else:
+        return round((float(value)/ total) * 100,2)
 
 class ProgressBar(object):
 

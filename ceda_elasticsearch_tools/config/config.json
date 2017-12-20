@@ -1,0 +1,66 @@
+{
+  "ceda-eo": {
+    "sentinel-1a": {
+      "files": [
+        "/neodc/sentinel1a/data/EW/L1_GRD/m/IPF_v2",
+        "/neodc/sentinel1a/data/IW/L1_GRD/h/IPF_v2",
+        "/neodc/sentinel1a/data/IW/L1_SLC/IPF_v2",
+        "/neodc/sentinel1a/data/IW/L1_SLC/IPF_v2",
+        "/neodc/sentinel1a/data/IW/L1_SLC/IPF_v2"
+      ],
+      "metadata_pattern": "S1._.+.manifest$"
+    },
+    "sentinel-1b": {
+      "files": [
+        "/neodc/sentinel1b/data/IW/L1_SLC/IPF_v2/2016",
+        "/neodc/sentinel1b/data/IW/L1_GRD/h/IPF_v2",
+        "/neodc/sentinel1b/data/IW/L1_GRD/h/IPF_v2",
+        "/neodc/sentinel1b/data/EW/L1_GRD/m/IPF_v2"
+      ],
+      "metadata_pattern": "S1._.+.manifest$"
+    },
+    "sentinel-2a": {
+      "files": [
+        "/neodc/sentinel2a/data/L1C_MSI"
+      ],
+      "metadata_pattern": "S2A_.*.manifest$"
+    },
+    "sentinel-3a": {
+      "files": [
+        "/neodc/sentinel3a/data/SLSTR/L1_RBT"
+      ],
+      "metadata_pattern": "S3A_.*.manifest$"
+    },
+    "landsat-5": {
+      "files": [
+        "/neodc/landsat5/data/TM"
+      ],
+      "metadata_pattern": "LT5.+_MTL.txt$"
+    },
+    "landsat-7": {
+      "files": [
+        "/neodc/landsat7etm/p020",
+        "/neodc/landsat7etm/p021",
+        "/neodc/landsat7etm/p022",
+        "/neodc/landsat7etm/p030",
+        "/neodc/landsat7etm/p031",
+        "/neodc/landsat7etm/p032",
+        "/neodc/landsat7etm/p041",
+        "/neodc/landsat7etm/p042"
+      ],
+      "metadata_pattern": "LE7.+_MTL.txt$"
+    },
+    "landsat-8": {
+      "files": [
+        "/neodc/landsat8/data/OLI_TIRS"
+      ],
+      "metadata_pattern": "LC8.+.txt$"
+    }
+  },
+  "eufar": {
+  },
+  "faam": {
+  },
+  "arsf": {
+  }
+}

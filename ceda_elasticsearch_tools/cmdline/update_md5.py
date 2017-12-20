@@ -27,10 +27,27 @@ from ceda_elasticsearch_tools.core import log_reader
 from ceda_elasticsearch_tools.core import updater
 from datetime import datetime
 import os, logging
+from ceda_elasticsearch_tools.cmdline import __version__
+from tqdm import tqdm
 
+def logger_setup(log_dir):
+
+    FORMAT = "%(levelname)s %(asctime)-15s %(message)s"
+
+    logging_path = log_dir
+
+    # Make sure the logger path exists
+    if not os.path.exists(logging_path):
+        os.makedirs(logging_path)
+
+    # initiate log
+    log_name = "md5_update-" + datetime.now().strftime("%Y-%m-%d") + ".log"
+    logging.basicConfig(filename=os.path.join(logging_path, log_name), level=logging.INFO, format=FORMAT)
+
+    return logging.getLogger(__name__)
 
 def main():
-    arguments = docopt(__doc__, version="0.1")
+    arguments = docopt(__doc__, version=__version__)
 
     # Extract commandline args.
     index = arguments["INDEX"]
@@ -46,22 +63,20 @@ def main():
     else:
         port = arguments["PORT"]
 
-    logging_path = log_dir
-    if not os.path.exists(logging_path):
-        os.makedirs(logging_path)
-
-    # initiate log
-    log_name = "md5_update-" + datetime.now().strftime("%Y-%m-%d") + ".log"
-    logging.basicConfig(filename=os.path.join(logging_path, log_name), level=logging.WARNING)
+    # setup logging
+    logger = logger_setup(log_dir)
 
     spots = log_reader.SpotMapping()
 
     print "Updating MD5 checksums for records in {} spots".format(len(spots))
+    logger.info("Updating {} index with md5 checksums.".format(index))
 
     update = updater.ElasticsearchUpdater(index=index, host=host, port=port)
 
     begin = datetime.now()
-    for spot in spots:
+    for spot in tqdm(spots):
+        logger.info('Analysing {}'.format(spot))
+
         # start = datetime.now()
         spot_base = spots.get_archive_root(spot)
         update.update_md5(spot, spot_base)
@@ -69,7 +84,7 @@ def main():
         #                                         update=True)
         # print "Spot: %s took: %s to analyse." % (spot, (datetime.now() - start))
 
-    print "Whole operation took: %s" % (datetime.now() - begin)
+    logger.info("Whole operation took: %s" % (datetime.now() - begin))
 
 if __name__ == "__main__":
     main()
