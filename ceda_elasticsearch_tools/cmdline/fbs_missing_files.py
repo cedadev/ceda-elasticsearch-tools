@@ -82,15 +82,15 @@ def generate_summary(config):
     data = [[k]+i for k,i in summary.iteritems()]
 
     # Display table and print totals
-    print tabulate(data, headers=["Spot","Files in Spot","Indexed","Missing","Percent Missing"])
+    print(tabulate(data, headers=["Spot","Files in Spot","Indexed","Missing","Percent Missing"]))
     total = sum([x[1] for x in data])
     indexed = sum([x[2] for x in data])
     missing = sum([x[3] for x in data])
     percent_missing = round((float(missing)/total)*100,2)
-    print "Total Files: {} Total Indexed: {} Total Missing: {} Percent Missing: {}".format(total, indexed, missing, percent_missing)
+    print("Total Files: {} Total Indexed: {} Total Missing: {} Percent Missing: {}".format(total, indexed, missing, percent_missing))
 
 def create_missing_list(config):
-    print "Generating missing files list: {}".format(config["MISSING_FILE"])
+    print("Generating missing files list: {}".format(config["MISSING_FILE"]))
     missing_files = []
     for file in os.listdir(config["OUTPUT"]):
         with open(os.path.join(config["OUTPUT"], file)) as log:
@@ -129,10 +129,9 @@ def main():
         pb.complete()
 
         generate_summary(config)
-        
+
     if config["--report"]:
         generate_summary(config)
 
     if config["MISSING_FILE"]:
         create_missing_list(config)
-

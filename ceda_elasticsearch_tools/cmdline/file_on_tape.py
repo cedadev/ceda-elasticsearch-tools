@@ -55,7 +55,7 @@ def main():
 
     index = args["INDEX"]
 
-    print "Script settings. ElasticSearch index: {} host: {} port: {}".format(index, host, port)
+    print("Script settings. ElasticSearch index: {} host: {} port: {}".format(index, host, port))
 
     # Get list of files on tape
     url = "http://nla.ceda.ac.uk/nla_control/api/v1/files?stages=T"
@@ -67,11 +67,11 @@ def main():
 
     p.terminate()
 
-    print ""
-    print "Number of files on tape: %s" % len(files)
+    print("")
+    print("Number of files on tape: %s" % len(files))
 
     # Update documents
-    print "Updating ElasticSearch"
+    print("Updating ElasticSearch")
 
     # Get file query for ceda_fbs
     params, query = ElasticsearchQuery.ceda_fbs()
@@ -84,4 +84,3 @@ def main():
 if __name__ == "__main__":
 
     main()
-
