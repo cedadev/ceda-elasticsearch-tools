@@ -101,7 +101,7 @@ class MD5LogFile(object):
                         line_path = os.path.join(base_dir, path)
                         self.md5s[line_path] = cksum
         if len(self.md5s) == 0:
-            print "md5s not found in logfile: %s" % log_path
+            print("md5s not found in logfile: %s" % log_path)
 
     def __len__(self):
         return len(self.md5s)
@@ -219,7 +219,7 @@ class DepositLog(object):
             log_data = self.read_log(log)
             result = esu.check_files_existence(log_data)
             if result["False"]:
-                print log, len(result["False"]), "Processing took: %s" % (datetime.now() - start)
+                print(log, len(result["False"]), "Processing took: %s" % (datetime.now() - start))
 
 
 
@@ -496,7 +496,6 @@ def get_latest_log(dir, prefix):
     # for spot in spots:
     #     start = datetime.now()
     #     update.get_md5_bulk_update_from_spotlog(spot_name=spot, spotmapobj=spots, log_base_dir=logging_path, update=True)
-    #     print "Spot: %s took: %s to analyse." % (spot, (datetime.now()-start))
+    #     print("Spot: %s took: %s to analyse." % (spot, (datetime.now()-start)))
     #
-    # print "Whole operation took: %s" % (datetime.now()-begin)
-
+    # print("Whole operation took: %s" % (datetime.now()-begin))
