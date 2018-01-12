@@ -88,19 +88,23 @@ class MD5LogFile(object):
         # Take the spot directory and find the latest log file.
         latest_log_file = get_latest_log(spot_dir, "checkm.")
 
-        # Log filepath = log_dir/latest_log_file
-        log_path = os.path.join(spot_dir, latest_log_file)
+        if latest_log_file:
 
-        with open(log_path) as reader:
-            for line in reader:
-                if not line.startswith('#'):
-                    if line.find("|") > -1:
-                        # e.g. line: metadata/csml/seviri_frp.xml|md5|69b829decea5563e33b0856ec80a0c83|806321|2010-04-29T11:10:13Z
-                        path, cksum_type, cksum, _1, _2 = line.strip().split("|")
-                        line_path = os.path.join(base_dir, path)
-                        self.md5s[line_path] = cksum
-        if len(self.md5s) == 0:
-            print("md5s not found in logfile: %s" % log_path)
+            # Log filepath = log_dir/latest_log_file
+            log_path = os.path.join(spot_dir, latest_log_file)
+
+            with open(log_path) as reader:
+                for line in reader:
+                    if not line.startswith('#'):
+                        if line.find("|") > -1:
+                            # e.g. line: metadata/csml/seviri_frp.xml|md5|69b829decea5563e33b0856ec80a0c83|806321|2010-04-29T11:10:13Z
+                            path, cksum_type, cksum, _1, _2 = line.strip().split("|")
+                            line_path = os.path.join(base_dir, path)
+                            self.md5s[line_path] = cksum
+            if len(self.md5s) == 0:
+                pass
+                # print("md5s not found in logfile: %s" % log_path)
+
 
     def __len__(self):
         return len(self.md5s)
@@ -108,8 +112,8 @@ class MD5LogFile(object):
     def __iter__(self):
         return iter(self.md5s)
 
-    def __getitem__(self, index):
-        return self.md5s.keys()[index]
+    def __getitem__(self, key):
+        return self.md5s[key]
 
     def as_list(self):
         return list(self.md5s)
@@ -466,8 +470,11 @@ def get_latest_log(dir, prefix):
 
     :return: The most recent log file.
     """
-    return sorted([dr for dr in os.listdir(dir) if dr.startswith(prefix)])[-1]
-
+    try:
+        latest =  sorted([dr for dr in os.listdir(dir) if dr.startswith(prefix)])[-1]
+        return latest
+    except IndexError:
+        return None
 
 
 

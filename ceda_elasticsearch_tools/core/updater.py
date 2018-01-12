@@ -78,6 +78,52 @@ class ElasticsearchQuery(object):
         return param_func, query
 
 
+class IndexFilter(object):
+    """
+    Given a list of files filter them on the specified index
+    """
+    def __init__(self):
+        # init logging
+        self.logger = logging.getLogger(__name__)
+
+
+        # load config
+        script_root = os.path.dirname(__file__)
+        with open(os.path.join(script_root,'../config/config.json')) as config_file:
+            self.config = json.load(config_file)
+
+        for group in self.config:
+            collapsed_list = []
+            for key, value in self.config[group].iteritems():
+                if "files" in value.keys():
+                    collapsed_list += value["files"]
+            self.config[group]["collapsed_file_list"] = collapsed_list
+
+    def index_filter(self, files, index):
+        """
+        Pass in a list of files and an index alias. If this name is listed in the config, return a filtered list
+        which only contains files relevant for that index.
+
+        :param files: List: List of files to filter
+        :param index: Str: Name of elasticsearch index alias
+        :return: Filtered list
+        """
+        if index not in self.config:
+            self.logger.error("Requested index: {} not in config file.".format(index))
+            return None
+
+        def root_match(value):
+            accepted_file_roots = self.config[index]["collapsed_file_list"]
+            for root in accepted_file_roots:
+                if root in value:
+                    return True
+                else:
+                    return False
+
+        return filter(root_match, files)
+
+
+
 class ElasticsearchUpdater(object):
     """
     Class to handle updates to the elasticsearch index.
@@ -275,6 +321,7 @@ class ElasticsearchUpdater(object):
 
         return output
 
+
     def update_location(self, file_list, params, search_query, on_disk, threshold=800):
         """
         Currently only works with the ceda-eo index.
@@ -336,54 +383,63 @@ class ElasticsearchUpdater(object):
 
     def update_md5(self, spot_name, spot_path, threshold=800):
 
-        logger = logging.getLogger(__name__)
-        logging.getLogger('elasticsearch').setLevel(logging.WARNING)
+        # logger = logging.getLogger(__name__)
+        # logging.getLogger('elasticsearch').setLevel(logging.WARNING)
 
 
         spotlog = MD5LogFile(spot_name, spot_path)
         file_list = spotlog.as_list()
 
-        logger.info("Spot: {} contains {} files.".format(spot_path, len(spotlog)))
+        # logger.info("Spot: {} contains {} files.".format(spot_path, len(spotlog)))
 
         param_func, query_tmpl = ElasticsearchQuery.ceda_fbs()
         result = self.check_files_existence(param_func, query_tmpl, file_list, raw_resp=True, threshold=threshold)
 
-        logger.info("Spot: {}. Files in index: {}. Files not in: {}. Percentage in: {}%".format(
-            spot_path,
-            len(result["True"]),
-            len(result["False"]),
-            util.percent(len(spotlog),len(result["True"]))
-            )
-        )
+        return len(result["True"])
+
+        # logger.info("Spot: {}. Files in index: {}. Files not in: {}. Percentage in: {}%".format(
+        #     spot_path,
+        #     len(result["True"]),
+        #     len(result["False"]),
+        #     util.percent(len(spotlog),len(result["True"]))
+        #     )
+        # )
+        # print ("Spot: {}. Files in index: {}. Files not in: {}. Percentage in: {}%".format(
+        #     spot_path,
+        #     len(result["True"]),
+        #     len(result["False"]),
+        #     util.percent(len(spotlog),len(result["True"]))
+        #     )
+        # )
         files_in = result["True"]
 
-        # Check md5s
-        update_total = 0
-        md5_json = ""
-
-        try:
-            for file in files_in:
-                file_info = file[0]["_source"]["info"]
-                filepath = os.path.join(file_info["directory"], file_info["name"])
-
-                if file_info["md5"] != spotlog.get_md5(filepath):
-                    update_total += 1
-
-                    id = file[0]["_id"]
-                    index = json.dumps({"update": {"_id": id, "_type": "file"}}) + "\n"
-                    md5_field = json.dumps({"source": {"doc": {"info": {"md5": spotlog.get_md5(filepath)}}}}) + "\n"
-                    md5_json += index + md5_field
-
-                if update_total > threshold:
-                    self.make_bulk_update(md5_json)
-                    md5_json = ""
-                    update_total = 0
-
-            if md5_json:
-                self.make_bulk_update(md5_json)
-
-        except Exception, msg:
-            logger.error(msg)
+        # # Check md5s
+        # update_total = 0
+        # md5_json = ""
+        #
+        # try:
+        #     for file in files_in:
+        #         file_info = file[0]["_source"]["info"]
+        #         filepath = os.path.join(file_info["directory"], file_info["name"])
+        #
+        #         if file_info["md5"] != spotlog.get_md5(filepath):
+        #             update_total += 1
+        #
+        #             id = file[0]["_id"]
+        #             index = json.dumps({"update": {"_id": id, "_type": "file"}}) + "\n"
+        #             md5_field = json.dumps({"source": {"doc": {"info": {"md5": spotlog.get_md5(filepath)}}}}) + "\n"
+        #             md5_json += index + md5_field
+        #
+        #         if update_total > threshold:
+        #             self.make_bulk_update(md5_json)
+        #             md5_json = ""
+        #             update_total = 0
+        #
+        #     if md5_json:
+        #         self.make_bulk_update(md5_json)
+        #
+        # except Exception, msg:
+        #     logger.error(msg)
 
 
 
