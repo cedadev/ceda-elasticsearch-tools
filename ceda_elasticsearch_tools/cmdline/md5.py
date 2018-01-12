@@ -7,28 +7,29 @@ Usage:
     update_md5.py -h | --help
     update_md5.py --version
     update_md5.py
-                   (-i INDEX        | --index   INDEX )
-                   (-o OUTPUT                           )
-                   [-h HOSTNAME     | --hostname HOSTNAME ]
-                   [-p PORT         | --port    PORT ]
+                   (-s SPOT         | --spot   SPOT        )
+                   (-a ARCHIVE_ROOT         | --archive_root   ARCHIVE_ROOT        )
+                   (-i INDEX        | --index   INDEX      )
+                   (-o OUTPUT                              )
+                   [-h HOSTNAME     | --hostname HOSTNAME  ]
+                   [-p PORT         | --port    PORT       ]
 
 
 Options:
     --help              Display help
     --version           Show Version
+    -s  --spot          Spot name
     -i  --index         Elasticsearch index to test
+    -o                  Logging output directory.
     -h  --hostname      Elasticsearch host to query [default: jasmin-es1.ceda.ac.uk]
     -p  --port          Elasticsearch read/write port [default: 9200]
-    -o                  Logging output directory.
 
 """
 from docopt import docopt
-from ceda_elasticsearch_tools.core import log_reader
 from ceda_elasticsearch_tools.core import updater
 from datetime import datetime
 import os, logging
 from ceda_elasticsearch_tools.cmdline import __version__
-from tqdm import tqdm
 
 def logger_setup(log_dir):
 
@@ -52,7 +53,10 @@ def main():
     # Extract commandline args.
     index = arguments["INDEX"]
     log_dir = arguments["OUTPUT"]
+    spot = arguments["SPOT"]
+    archive_root = arguments["ARCHIVE_ROOT"]
 
+    # Set defaults
     if arguments["HOSTNAME"] == None:
         host = "jasmin-es1.ceda.ac.uk"
     else:
@@ -65,27 +69,19 @@ def main():
 
     # setup logging
     logger = logger_setup(log_dir)
-
-    spots = log_reader.SpotMapping()
-
-    print "Updating MD5 checksums for records in {} spots".format(len(spots))
     logger.info("Updating {} index with md5 checksums.".format(index))
 
-
+    # Initialise the elasticsearch updater instance
     update = updater.ElasticsearchUpdater(index=index, host=host, port=port)
 
-    begin = datetime.now()
-    for spot in tqdm(spots):
-        logger.info('Analysing {}'.format(spot))
+    logger.info('Analysing {}'.format(spot))
 
-        # start = datetime.now()
-        spot_base = spots.get_archive_root(spot)
-        update.update_md5(spot, spot_base)
-        # update.get_md5_bulk_update_from_spotlog(spot_name=spot, spotmapobj=spots, log_base_dir=logging_path,
-        #                                         update=True)
-        # print("Spot: %s took: %s to analyse." % (spot, (datetime.now() - start)))
+    # Update MD5s for given spot
+    start = datetime.now()
+    update.update_md5(spot, archive_root)
 
-    logger.info("Whole operation took: %s" % (datetime.now() - begin))
+
+    logger.info("Spot: {}  Update took: {}".format(spot, datetime.now() - start))
 
 
 if __name__ == "__main__":

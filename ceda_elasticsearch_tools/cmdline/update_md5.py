@@ -1,4 +1,3 @@
-
 """
 Update MD5. Use this script to scan a spot logfile, gather the md5 checksums, query Elasticsearch to see if md5 matches
 and if not, update it using the Elasticsearch Bulk API.
@@ -17,9 +16,9 @@ Options:
     --help              Display help
     --version           Show Version
     -i  --index         Elasticsearch index to test
+    -o                  Logging output directory.
     -h  --hostname      Elasticsearch host to query [default: jasmin-es1.ceda.ac.uk]
     -p  --port          Elasticsearch read/write port [default: 9200]
-    -o                  Logging output directory.
 
 """
 from docopt import docopt
@@ -29,9 +28,10 @@ from datetime import datetime
 import os, logging
 from ceda_elasticsearch_tools.cmdline import __version__
 from tqdm import tqdm
+import subprocess
+
 
 def logger_setup(log_dir):
-
     FORMAT = "%(levelname)s %(asctime)-15s %(message)s"
 
     logging_path = log_dir
@@ -45,6 +45,7 @@ def logger_setup(log_dir):
     logging.basicConfig(filename=os.path.join(logging_path, log_name), level=logging.INFO, format=FORMAT)
 
     return logging.getLogger(__name__)
+
 
 def main():
     arguments = docopt(__doc__, version=__version__)
@@ -68,24 +69,28 @@ def main():
 
     spots = log_reader.SpotMapping()
 
-    print "Updating MD5 checksums for records in {} spots".format(len(spots))
     logger.info("Updating {} index with md5 checksums.".format(index))
 
+    with open('completed_spots.txt', 'ra') as comp_spot_output:
+        # Load completed spots
+        completed_spots = comp_spot_output.readlines()
 
-    update = updater.ElasticsearchUpdater(index=index, host=host, port=port)
+        begin = datetime.now()
+        for spot in spots:
+            # Only run non-complete spots
+            if spot not in completed_spots:
+                subprocess.call('md5.py -s {spot} -a {archive_root} -i {index} -o {log_dir}'.format(
+                        spot=spot,
+                        archive_root=spots.get_archive_root(
+                            spot),
+                        index=index,
+                        log_dir=log_dir),
+                    shell=True)
 
-    begin = datetime.now()
-    for spot in tqdm(spots):
-        logger.info('Analysing {}'.format(spot))
+                # Add completed spot to the completed spot file
+                comp_spot_output.write(spot + "\n")
 
-        # start = datetime.now()
-        spot_base = spots.get_archive_root(spot)
-        update.update_md5(spot, spot_base)
-        # update.get_md5_bulk_update_from_spotlog(spot_name=spot, spotmapobj=spots, log_base_dir=logging_path,
-        #                                         update=True)
-        # print("Spot: %s took: %s to analyse." % (spot, (datetime.now() - start)))
-
-    logger.info("Whole operation took: %s" % (datetime.now() - begin))
+        logger.info("Whole operation took: %s" % (datetime.now() - begin))
 
 
 if __name__ == "__main__":
