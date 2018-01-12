@@ -71,9 +71,15 @@ def main():
 
     logger.info("Updating {} index with md5 checksums.".format(index))
 
-    with open('completed_spots.txt', 'ra') as comp_spot_output:
-        # Load completed spots
-        completed_spots = comp_spot_output.readlines()
+    # Load completed spots
+    try:
+        with open('completed_spots.txt') as reader:
+            completed_spots = reader.read().splitlines()
+
+    except IOError:
+        completed_spots = []
+
+    with open('completed_spots.txt', 'a') as comp_spot_output:
 
         begin = datetime.now()
         for spot in spots:
@@ -88,7 +94,7 @@ def main():
                     shell=True)
 
                 # Add completed spot to the completed spot file
-                comp_spot_output.write(spot + "\n")
+                comp_spot_output.write("{}\n".format(spot))
 
         logger.info("Whole operation took: %s" % (datetime.now() - begin))
 
