@@ -69,7 +69,6 @@ def main():
 
     # setup logging
     logger = logger_setup(log_dir)
-    logger.info("Updating {} index with md5 checksums.".format(index))
 
     # Initialise the elasticsearch updater instance
     update = updater.ElasticsearchUpdater(index=index, host=host, port=port)
