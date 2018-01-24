@@ -12,6 +12,7 @@ Usage:
                    [-h HOSTNAME     | --hostname HOSTNAME   ]
                    [-p PORT         | --port    PORT        ]
                    [-c              | --calculate           ]
+                   [--no-create-files                       ]
 
 
 Options:
@@ -22,6 +23,7 @@ Options:
     -h  --hostname      Elasticsearch host to query [default: jasmin-es1.ceda.ac.uk]
     -p  --port          Elasticsearch read/write port [default: 9200]
     -c  --calculate     Calculate the MD5s from scratch and ignore the log files
+    --no-create-files   Don't repeat the elasticsearch download phase
 
 """
 from docopt import docopt
@@ -91,7 +93,7 @@ def extract_id(page):
     return page_data
 
 
-def write_page_to_file(page,page_no, output_dir):
+def write_page_to_file(page, page_no, output_dir):
 
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
@@ -146,7 +148,7 @@ def download_files_missing_md5(index,host,port, output_dir):
         # Get the number of results that we returned in the last scroll
         scroll_size = len(page['hits']['hits'])
         # Do something with the obtained page
-        write_page_to_file(page, page_no)
+        write_page_to_file(page, page_no, output_dir)
     pb.complete()
 
 
@@ -158,10 +160,13 @@ def calculate_md5s(arguments):
 
     document_output = 'page_files'
 
-    # Download ES id and filepath to local file.
-    download_files_missing_md5(index, host, port, document_output)
+    if arguments["--no-create-files"] == False:
+        print "Downloading records missing MD5s"
+        # Download ES id and filepath to local file.
+        download_files_missing_md5(index, host, port, document_output)
 
     # Submit those files as jobs to lotus
+    print "Submit jobs to lotus"
     for file in os.listdir(document_output):
         command = 'md5.py -i {index} -o {log_dir} --pagefile {page}'.format(
             index=index,
@@ -195,8 +200,10 @@ def main():
     begin = datetime.now()
 
     if arguments["-c"] or arguments["--calculate"]:
+        print "Updating MD5s by calculation"
         calculate_md5s(arguments)
     else:
+        print "Updating MD5 from spot logs"
         update_from_logs(arguments, index, log_dir)
 
 

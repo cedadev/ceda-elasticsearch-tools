@@ -348,10 +348,10 @@ class ElasticsearchUpdater(object):
 
         # Only update those files which are contained in the target index.
         files_to_update = index_test["True"]
+        print "Files to update: {}".format(len(index_test["True"]))
 
         if len(files_to_update) == 0:
             return "No files to update"
-
 
         # create update json and update location
         update_json = ""
@@ -359,8 +359,13 @@ class ElasticsearchUpdater(object):
 
         for i, file in enumerate(files_to_update,1):
             id = file[0]["_id"]
-            index = json.dumps({"update": {"_id": id, "_type": "geo_metadata"}}) + "\n"
-            location_field = json.dumps({"source": {"doc": {"file": {"location": location }}}}) + "\n"
+
+            if self.index == "ceda-eo":
+                index = json.dumps({"update": {"_id": id, "_type": "geo_metadata"}}) + "\n"
+                location_field = json.dumps({"source": {"doc": {"file": {"location": location }}}}) + "\n"
+            else:
+                index = json.dumps({"update": {"_id": id, "_type": "file"}}) + "\n"
+                location_field = json.dumps({"source": {"doc": {"info": {"location": location }}}}) + "\n"
             update_json += index + location_field
 
             if i % threshold == 0:
