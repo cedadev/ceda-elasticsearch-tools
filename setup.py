@@ -80,7 +80,7 @@ setup(
     # pip to create the appropriate form of executable for the target platform.
     entry_points={
         'console_scripts': [
-            'file_on_tape.py=ceda_elasticsearch_tools.cmdline.file_on_tape:main',
+            'nla_sync_es.py=ceda_elasticsearch_tools.cmdline.nla_sync_es:main',
             'update_md5.py=ceda_elasticsearch_tools.cmdline.update_md5:main',
             'md5.py=ceda_elasticsearch_tools.cmdline.md5:main',
             'fbs_missing_files.py=ceda_elasticsearch_tools.cmdline.fbs_missing_files:main',

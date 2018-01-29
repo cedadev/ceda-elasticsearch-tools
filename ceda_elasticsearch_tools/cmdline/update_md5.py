@@ -114,6 +114,13 @@ def download_files_missing_md5(index,host,port, output_dir):
                             "value": ""
                         }
                     }}
+                ],
+                "must_not": [
+                    {"term": {
+                        "info.location": {
+                            "value": "on_tape"
+                        }
+                    }}
                 ]
             }
         }

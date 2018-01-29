@@ -283,6 +283,9 @@ class ElasticsearchUpdater(object):
     def _get_and_process_results(self, msearchquery_list, file_list, blocksize, output, raw_resp):
         """
         Generate a True False dict of filepaths contained in the index from a suppled file list.
+        If raw_resp = True, return the elasticsearch document in the output.
+
+        If the query doesn't get a hit. Just return the filepath.
 
         :param msearchquery_list: A list containing msearch query JSON split into blocks.
         :param file_list: List of filepaths to test.
@@ -384,7 +387,7 @@ class ElasticsearchUpdater(object):
                                                                len(index_test["False"])
                                                                )
 
-        return summary_string, result
+        return summary_string, result, index_test["False"]
 
     def update_md5(self, spot_name, spot_path, threshold=800):
 
