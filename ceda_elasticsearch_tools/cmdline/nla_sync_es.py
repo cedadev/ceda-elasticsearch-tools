@@ -1,5 +1,5 @@
 '''
-file_on_tape.py
+nla_sync_fbs.py
 
 Updates the file location on the target elasticsearch index using the NLA as a baseline.
 Files which are not visible on disk at the time of scanning will not be in ES. Use the
@@ -11,11 +11,9 @@ To be used as a command line tool.
 
 Usage:
     file_on_tape.py INDEX
-    file_on_tape.py INDEX [--port PORT]
+    file_on_tape.py INDEX [--host HOST]
     file_on_tape.py INDEX [--host HOST] [--port PORT]
-    file_on_tape.py INDEX [--index-docs]
-    file_on_tape.py INDEX [--level LEVEL ] [--index-docs]
-    file_on_tape.py INDEX [--host HOST] [--port PORT] [--level LEVEL ] [--index-docs]
+    file_on_tape.py INDEX [--host HOST] [--port PORT] [--index-docs]
     file_on_tape.py --version
 
 Options:
@@ -36,6 +34,9 @@ import itertools, sys
 from multiprocessing import Process
 import os
 import shutil
+from itertools import islice
+import simplejson as json
+import subprocess
 
 def loading(message):
     """
@@ -54,35 +55,45 @@ def create_output_dir(output_dir, batch_dir):
     Makes sure that the output directories are in place and clean, ready for the sync
     """
     print("Creating output dir")
+    if os.path.isdir(output_dir):
+        # Make sure to always start with fresh batch and missing files directory
+        print("Deleting existing batch dir and missing files dir")
+        shutil.rmtree(batch_dir)
+        shutil.rmtree(os.path.join(output_dir,'missing_files_on_disk'))
 
-
-
-    if os.path.isdir(OUTPUT_DIR):
-        # Make sure to always start with fresh batch directory
-        shutil.rmtree(BATCH_DIR)
-        os.mkdir(BATCH_DIR)
+        print("Creating new batch dir and missing files dir")
+        os.mkdir(os.path.join(output_dir,'missing_files_on_disk'))
+        os.mkdir(batch_dir)
+        os.mkdir(os.path.join(batch_dir, 'on_tape'))
+        os.mkdir(os.path.join(batch_dir, 'on_disk'))
 
     else:
         # Create the needed dirs
-        os.mkdir(OUTPUT_DIR)
-        os.mkdir(BATCH_DIR)
-        os.mkdir(os.path.join(BATCH_DIR,'on_tape'))
-        os.mkdir(os.path.join(BATCH_DIR,'on_disk'))
+        os.mkdir(output_dir)
+        os.mkdir(os.path.join(output_dir,'missing_files_on_disk'))
+        os.mkdir(batch_dir)
+        os.mkdir(os.path.join(batch_dir,'on_tape'))
+        os.mkdir(os.path.join(batch_dir,'on_disk'))
 
 
 def download_data_from_nla(url):
     """
     Download the data lists from the NLA
     :param url: The url to get data from.
-    :return: Two lists: files_t = Files on tape, files_d = Files on disk
+    :return: Two dicts: files_t = Files on tape, files_d = Files on disk
     """
     p = Process(target=loading,args=("Retrieving list of files on tape from nla.ceda.ac.uk",))
     p.start()
 
     r = requests.get(url).json()
 
-    files_t = [x["path"] for x in r["files"] if x["stage"] == 'T']
-    files_d = [x["path"] for x in r["files"] if x["stage"] == 'D' or x["stage"] == 'R']
+    files_t = {file['path']:file['size'] for file in r['files'] if file['stage']=='T'}
+    files_d = {file['path']:file['size'] for file in r['files'] if file['stage']=='D' or file['stage']=='R'}
+
+    # for file in r['files']
+    #
+    # files_t = [x["path"] for x in r["files"] if x["stage"] == 'T']
+    # files_d = [x["path"] for x in r["files"] if x["stage"] == 'D' or x["stage"] == 'R']
 
     p.terminate()
     print("")
@@ -95,14 +106,18 @@ def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
+
+def chunk_dict(d, n):
+    '''Yield n-sized chuncks from d'''
+    it = iter(d)
+    for i in xrange(0, len(d), n):
+        yield {k:d[k] for k in islice(it, n)}
+
+
 def main():
-    '''
-    Steps to achieve the desired result:
-    1. Retrieve list of files on tape from NLA
-    2. Search target index, retrieving IDs for files in the index and holding information about files not in the index.
-    3. Use list of files which are in the index to update the location to on tape
-    4. Dump list of files not contained in the index for further analysis.
-    '''
+    """
+
+    """
 
     # Get command line arguments
     args = docopt(__doc__, version=pkg_resources.require("ceda_elasticsearch_tools")[0].version)
@@ -131,25 +146,51 @@ def main():
     # Create output directory
     create_output_dir(OUTPUT_DIR, BATCH_DIR)
 
+    print("Writing file list batches.")
     # Split files_on_tape into chunks of 10k and write to disk
-    for i,files in enumerate(chunks(files_on_tape,10000)):
-        with open(os.path.join(BATCH_DIR,"on_tape","on_tape_batch_{}.txt".format(i)),'w') as writer:
-            writer.writelines([x+"\n" for x in files])
 
-    for i,files in enumerate(chunks(files_on_disk,10000)):
-        with open(os.path.join(BATCH_DIR,"on_disk","on_disk_batch_{}.txt".format(i)),'w') as writer:
-            writer.writelines([x+"\n" for x in files])
+    ############################################ FILES ON TAPE #########################################################
 
-    # # Update documents
-    # print("Updating ElasticSearch")
-    #
-    # # Get file query for ceda_fbs
-    # params, query = ElasticsearchQuery.ceda_fbs()
-    #
-    # _,_,missing_files_list = ElasticsearchUpdater(index=index,
-    #                      host=host,
-    #                      port=port
-    #                      ).update_location(file_list=files, params=params, search_query=query, on_disk=False)
+    for i,files in enumerate(chunk_dict(files_on_tape,10000)):
+        with open(os.path.join(BATCH_DIR,"on_tape","on_tape_batch_{}.json".format(i)),'w') as writer:
+            # writer.writelines([x + "\n" for x in files])
+            json.dump(files, writer)
+
+    # Create lotus jobs for files on tape
+    for file in os.listdir(os.path.join(BATCH_DIR,"on_tape")):
+        if args['--index-docs']:
+            cmd = "nla_sync_lotus_task.py -i {index} -f {input_file} -o {output_dir} --on-tape --index-docs".format(
+                index=index, input_file=os.path.join(BATCH_DIR,"on_tape", file), output_dir=OUTPUT_DIR
+            )
+        else:
+            cmd = "nla_sync_lotus_task.py -i {index} -f {input_file} -o {output_dir} --on-tape".format(
+                index=index, input_file=os.path.join(BATCH_DIR,"on_tape", file), output_dir=OUTPUT_DIR
+            )
+
+        print cmd
+        subprocess.call("bsub -q short-serial -W 24:00 {}".format(cmd),shell=True)
+
+
+    ############################################ FILES ON DISK #########################################################
+
+    for i,files in enumerate(chunk_dict(files_on_disk,10000)):
+        with open(os.path.join(BATCH_DIR,"on_disk","on_disk_batch_{}.json".format(i)),'w') as writer:
+            # writer.writelines([x+"\n" for x in files])
+            json.dump(files,writer)
+
+    # Create lotus jobs for files on disk
+    for file in os.listdir(os.path.join(BATCH_DIR,"on_disk")):
+        if args['--index-docs']:
+            cmd = "nla_sync_lotus_task.py -i {index} -f {input_file} -o {output_dir} --on-disk --index-docs".format(
+                index=index, input_file=os.path.join(BATCH_DIR,"on_disk", file), output_dir=OUTPUT_DIR
+            )
+        else:
+            cmd = "nla_sync_lotus_task.py -i {index} -f {input_file} -o {output_dir} --on-disk".format(
+                index=index, input_file=os.path.join(BATCH_DIR,"on_disk", file), output_dir=OUTPUT_DIR
+            )
+
+        print cmd
+        subprocess.call("bsub -q short-serial -W 24:00 {}".format(cmd),shell=True)
 
 if __name__ == "__main__":
 

@@ -6,6 +6,7 @@ import logging
 from log_reader import MD5LogFile
 from datetime import datetime
 import util
+import hashlib
 
 
 class ElasticsearchQuery(object):
@@ -51,16 +52,44 @@ class ElasticsearchQuery(object):
         """
 
         query = json.dumps({"query": {"bool": {"must": {"match": {"file.directory": "<dirname>"}},
-                                                          "filter": {
-                                                              "term": {"file.data_file.keyword": "<filename>"}}}}})
+                                               "filter": {
+                                                   "term": {"file.data_file.keyword": "<filename>"}}}}})
 
         def param_func(item):
-            return {"filename": os.path.basename(item), "dirname": os.path.dirname(item)}
+            return {"id": os.path.basename(item), "dirname": os.path.dirname(item)}
 
         return param_func, query
 
     @staticmethod
     def ceda_fbs():
+        """
+        Method returns parameters and query needed by Elasticsearch.check_files_existence() in order to work with
+        ceda-fbs.
+        :return:
+            param_func: The function which will be used by the template renderer
+            query
+        """
+        # query = json.dumps({"query": {"bool": {"must": {"match": {"info.directory": "<dirname>"}},
+        #                                                   "filter": {
+        #                                                       "term": {"info.name": "<filename>"}}}}})
+        #
+        # def param_func(item):
+        #     return {"filename": os.path.basename(item), "dirname": os.path.dirname(item)}
+
+        query = json.dumps({
+            "query": {
+                "term": {
+                    "_id": "<id>"
+                }
+            }
+        })
+
+        def param_func(item):
+            return {"id": hashlib.sha1(item).hexdigest()}
+        return param_func, query
+
+    @staticmethod
+    def ceda_fbs_old():
         """
         Method returns parameters and query needed by Elasticsearch.check_files_existence() in order to work with
         ceda-fbs.
@@ -82,14 +111,14 @@ class IndexFilter(object):
     """
     Given a list of files filter them on the specified index
     """
+
     def __init__(self):
         # init logging
         self.logger = logging.getLogger(__name__)
 
-
         # load config
         script_root = os.path.dirname(__file__)
-        with open(os.path.join(script_root,'../config/config.json')) as config_file:
+        with open(os.path.join(script_root, '../config/config.json')) as config_file:
             self.config = json.load(config_file)
 
         for group in self.config:
@@ -121,7 +150,6 @@ class IndexFilter(object):
                     return False
 
         return filter(root_match, files)
-
 
 
 class ElasticsearchUpdater(object):
@@ -178,8 +206,7 @@ class ElasticsearchUpdater(object):
 
         msearch_query_list = self.gen_msearch_json(query_tmpl, param_func, file_list, blocksize=threshold)
 
-        file_in_index = self._get_and_process_results(msearch_query_list,file_list, threshold, file_in_index, raw_resp)
-
+        file_in_index = self._get_and_process_results(msearch_query_list, file_list, threshold, file_in_index, raw_resp)
 
         return file_in_index
 
@@ -261,7 +288,6 @@ class ElasticsearchUpdater(object):
 
         return query_list
 
-
     def _render_query(self, query, parameters):
         """
         Renders parameters into JSON for elasticsearch query.
@@ -318,23 +344,20 @@ class ElasticsearchUpdater(object):
                         if response["hits"]["total"] == 0:
                             output["False"].append(file_list[i + (blocksize * scroll_count)])
 
-
-
-            scroll_count+= 1
+            scroll_count += 1
 
         return output
 
-
     def update_location(self, file_list, params, search_query, on_disk, threshold=800):
         """
-        Currently only works with the ceda-eo index.
+        Currently only works with the ceda-eo and fbs indexes.
 
         :param file_list: List of file paths to update
         :param params: function which returns parameters
         :param search_query: query used to search index to check existence
         :param on_disk: Boolean. Sets location value to on_disk or on_tape
 
-        :return: 1. Summary string. 2. Result from the bulk API.
+        :return: List of files which were not found in ES index
         """
 
         # set location
@@ -359,20 +382,28 @@ class ElasticsearchUpdater(object):
         # create update json and update location
         update_json = ""
         result = []
+        updated_files = 0
 
-        for i, file in enumerate(files_to_update,1):
+        for i, file in enumerate(files_to_update, 1):
             id = file[0]["_id"]
+
 
             if self.index == "ceda-eo":
                 index = json.dumps({"update": {"_id": id, "_type": "geo_metadata"}}) + "\n"
-                location_field = json.dumps({"source": {"doc": {"file": {"location": location }}}}) + "\n"
+                location_field = json.dumps({"source": {"doc": {"file": {"location": location}}}}) + "\n"
+                update_json += index + location_field
+                updated_files += 1
+
             else:
-                index = json.dumps({"update": {"_id": id, "_type": "file"}}) + "\n"
-                location_field = json.dumps({"source": {"doc": {"info": {"location": location }}}}) + "\n"
-            update_json += index + location_field
+                if file[0]["_source"]["info"]["location"] != location:
+                    index = json.dumps({"update": {"_id": id, "_type": "file"}}) + "\n"
+                    location_field = json.dumps({"source": {"doc": {"info": {"location": location}}}}) + "\n"
+                    update_json += index + location_field
+                    updated_files +=1
 
             if i % threshold == 0:
-                result.append(self.make_bulk_update(update_json))
+                if update_json:
+                    result.append(self.make_bulk_update(update_json))
                 update_json = ""
 
         # Clean up any remaining updates
@@ -383,11 +414,11 @@ class ElasticsearchUpdater(object):
                          "Updated {} files. " \
                          "{} files not in target index".format(len(file_list),
                                                                self.index,
-                                                               i,
+                                                               updated_files,
                                                                len(index_test["False"])
                                                                )
 
-        return summary_string, result, index_test["False"]
+        return index_test["False"], summary_string
 
     def update_md5(self, spot_name, spot_path, threshold=800):
 
@@ -408,8 +439,8 @@ class ElasticsearchUpdater(object):
             spot_path,
             len(result["True"]),
             len(result["False"]),
-            util.percent(len(spotlog),len(result["True"]))
-            )
+            util.percent(len(spotlog), len(result["True"]))
+        )
         )
 
         files_in = result["True"]
@@ -441,6 +472,5 @@ class ElasticsearchUpdater(object):
 
         except Exception, msg:
             logger.error(msg)
-
 
 
