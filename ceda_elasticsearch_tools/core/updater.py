@@ -324,7 +324,7 @@ class ElasticsearchUpdater(object):
         scroll_count = 0
         for mquery in msearchquery_list:
 
-            results = self.es.msearch(index=self.index, body=mquery, request_timeout=60)
+            results = self.es.msearch(index=self.index, body=mquery, request_timeout=240)
 
             if results:
                 for i, response in enumerate(results["responses"]):

@@ -10,19 +10,19 @@ these files at the desired detail.
 To be used as a command line tool.
 
 Usage:
-    file_on_tape.py INDEX
-    file_on_tape.py INDEX [--host HOST]
-    file_on_tape.py INDEX [--host HOST] [--port PORT]
-    file_on_tape.py INDEX [--host HOST] [--port PORT] [--index-docs]
-    file_on_tape.py --version
+    nla_sync_es.py INDEX
+    nla_sync_es.py INDEX [--host HOST]
+    nla_sync_es.py INDEX [--host HOST] [--port PORT]
+    nla_sync_es.py INDEX [--host HOST] [--port PORT] [--index-docs] [--no-scan]
+    nla_sync_es.py --version
 
 Options:
     -h --help       Show this screen.
     --version       Show version.
     --host          Elasticsearch host to target.
     --port          Elasticsearch port to target.
-    --level         ceda-fbs scanning level.
-    --index-docs    Index files not found at level 1 detail or if RESTORED create job for lotus.
+    --index-docs    Index files not found at level 1 detail or if available on disk, write to dir ready for FBS code.
+    --no-scan       Don't download new list. Used to capture failed jobs.
 '''
 from docopt import docopt
 
@@ -139,25 +139,30 @@ def main():
 
     print("Script settings. ElasticSearch index: {} host: {} port: {}".format(index, host, port))
 
-    # Get list of files on tape and disk
-    url = "http://nla.ceda.ac.uk/nla_control/api/v1/files?stages=TDR"
-    files_on_tape, files_on_disk = download_data_from_nla(url)
 
-    # Create output directory
-    create_output_dir(OUTPUT_DIR, BATCH_DIR)
+    if not args['--no-scan']:
+        # Get list of files on tape and disk
+        url = "http://nla.ceda.ac.uk/nla_control/api/v1/files?stages=TDR"
+        files_on_tape, files_on_disk = download_data_from_nla(url)
 
-    print("Writing file list batches.")
-    # Split files_on_tape into chunks of 10k and write to disk
+        # Create output directory
+        create_output_dir(OUTPUT_DIR, BATCH_DIR)
 
-    ############################################ FILES ON TAPE #########################################################
+        print("Writing file list batches.")
+        # Split files_on_tape into chunks of 10k and write to disk
 
-    for i,files in enumerate(chunk_dict(files_on_tape,10000)):
-        with open(os.path.join(BATCH_DIR,"on_tape","on_tape_batch_{}.json".format(i)),'w') as writer:
-            # writer.writelines([x + "\n" for x in files])
-            json.dump(files, writer)
+        for i,files in enumerate(chunk_dict(files_on_tape,10000)):
+            with open(os.path.join(BATCH_DIR,"on_tape","on_tape_batch_{}.json".format(i)),'w') as writer:
+                # writer.writelines([x + "\n" for x in files])
+                json.dump(files, writer)
+
+        for i,files in enumerate(chunk_dict(files_on_disk,10000)):
+            with open(os.path.join(BATCH_DIR,"on_disk","on_disk_batch_{}.json".format(i)),'w') as writer:
+                # writer.writelines([x+"\n" for x in files])
+                json.dump(files,writer)
 
     # Create lotus jobs for files on tape
-    for file in os.listdir(os.path.join(BATCH_DIR,"on_tape")):
+    for i,file in enumerate(os.listdir(os.path.join(BATCH_DIR,"on_tape"))):
         if args['--index-docs']:
             cmd = "nla_sync_lotus_task.py -i {index} -f {input_file} -o {output_dir} --on-tape --index-docs".format(
                 index=index, input_file=os.path.join(BATCH_DIR,"on_tape", file), output_dir=OUTPUT_DIR
@@ -167,16 +172,10 @@ def main():
                 index=index, input_file=os.path.join(BATCH_DIR,"on_tape", file), output_dir=OUTPUT_DIR
             )
 
-        print cmd
         subprocess.call("bsub -q short-serial -W 24:00 {}".format(cmd),shell=True)
-
-
-    ############################################ FILES ON DISK #########################################################
-
-    for i,files in enumerate(chunk_dict(files_on_disk,10000)):
-        with open(os.path.join(BATCH_DIR,"on_disk","on_disk_batch_{}.json".format(i)),'w') as writer:
-            # writer.writelines([x+"\n" for x in files])
-            json.dump(files,writer)
+        if i> 0 and i % 10 == 0:
+            print ("Waiting before submitting new jobs")
+            sleep(40)
 
     # Create lotus jobs for files on disk
     for file in os.listdir(os.path.join(BATCH_DIR,"on_disk")):

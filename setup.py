@@ -26,7 +26,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.5',
+    version='0.1.7',
 
     description='Extension of the basic elasticsearch python wrapper to perform operations with a given ES index.',
     long_description=long_description,
@@ -85,7 +85,7 @@ setup(
             'update_md5.py=ceda_elasticsearch_tools.cmdline.update_md5:main',
             'md5.py=ceda_elasticsearch_tools.cmdline.md5:main',
             'fbs_missing_files.py=ceda_elasticsearch_tools.cmdline.fbs_missing_files:main',
-            'spot_checker.py=ceda_elasticsearch_tools.cmdline.spot_checker:main',
+            'spot_checker.py=ceda_elasticsearch_tools.cmdline.secondary_scripts.spot_checker:main',
             'fbs_live_index=ceda_elasticsearch_tools.cmdline.deposit:main',
             'coverage_test=ceda_elasticsearch_tools.cmdline.ceda_eo.coverage_test:main'
         ],

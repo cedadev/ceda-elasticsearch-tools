@@ -183,7 +183,7 @@ class NLASync():
         action_list, files_to_index = self.create_bulk_index_json(files_to_index, self.blocksize)
 
         for action, files in zip(action_list, files_to_index):
-            r = self.es.bulk(body=action, request_timeout=60)
+            r = self.es.bulk(body=action, request_timeout=120)
             self.process_response_for_errors(r, files)
         print "Files indexed: {} Database Errors: {} Properties errors: {}".format(self.files_indexed,
                                                                                    self.database_errors,

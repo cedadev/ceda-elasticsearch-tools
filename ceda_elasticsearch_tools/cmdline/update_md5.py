@@ -22,7 +22,7 @@ Options:
     -o                  Logging output directory.
     -h  --hostname      Elasticsearch host to query [default: jasmin-es1.ceda.ac.uk]
     -p  --port          Elasticsearch read/write port [default: 9200]
-    -c  --calculate     Calculate the MD5s from scratch and ignore the log files
+    -c  --calculate     Calculate the MD5s from scratch and ignore the log files when calculating MD5
     --no-create-files   Don't repeat the elasticsearch download phase
 
 """
