@@ -87,7 +87,7 @@ def main():
 
             dl.write_filelist(os.path.join(config['DIR'], deposit_output))
 
-            command = "/home/badc/software/fbs/venv-ceda-fbs/bin/python ceda-fbs/python/src/fbs/cmdline/scan_dataset.py -f {dataset} -n {num_files} -s 0 -l {level} i {index}".format(
+            command = "/home/badc/software/fbs/venv-ceda-fbs/bin/python ceda-fbs/python/src/fbs/cmdline/scan_dataset.py -f {dataset} -n {num_files} -s 0 -l {level} -i {index}".format(
                 dataset=os.path.join("datasets", deposit_output),
                 num_files=len(dl.deposit_list),
                 level=config["LEVEL"],
