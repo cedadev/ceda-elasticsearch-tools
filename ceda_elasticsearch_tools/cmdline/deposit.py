@@ -83,7 +83,7 @@ def main():
 
     else:
         # File has not yet been scanned. Proceed to push data to elasticsearch
-        if dl.deletion_list:
+        if dl.deposit_list:
 
             dl.write_filelist(os.path.join(config['DIR'], deposit_output))
 
