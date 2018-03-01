@@ -138,7 +138,8 @@ class DepositLog(object):
     Object to read an use deposit log file to update elasticsearch and generate md5 checksums.
     """
     log_dir = "/badc/ARCHIVE_INFO/deposit_logs"
-    file_list = []
+    deposit_list = []
+    deletion_list = []
     filename = None
 
     def __init__(self, log_filename=None):
@@ -147,8 +148,9 @@ class DepositLog(object):
 
         :param log_filename: Allows the user to specify a log to open. Defaults to the most recent.
         """
-        # Make sure file_list is clear before reading file.
-        self.file_list = []
+        # Make sure deposit_list/deletion_list is clear before reading file.
+        self.deposit_list = []
+        self.deletion_list = []
 
         if log_filename is None:
             # If no log file provided, use the penultimate log file. eg. Most recent complete log file.
@@ -158,34 +160,47 @@ class DepositLog(object):
 
         with open(os.path.join(self.log_dir, log_filename)) as reader:
             # date regex
-            pattern = re.compile("^\d{4}[-](\d{2})[-]\d{2}.*:DEPOSIT:")
+            deposit = re.compile("^\d{4}[-](\d{2})[-]\d{2}.*:DEPOSIT:")
+
+            deletion = re.compile("^\d{4}[-](\d{2})[-]\d{2}.*:REMOVE:")
 
             for line in reader:
                 # Check line matches expression. ie. starts with a date and matches action DEPOSIT.
-                if pattern.match(line):
+                if deposit.match(line):
                     # Split line into its components.
                     # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:DEPOSIT:1388172: (force=None) /datacentre/arrivals/users/dartmetoffice/ukmo-msg/EWXT11_201708190300.png
                     date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
-                    self.file_list.append(filepath)
+                    self.deposit_list.append(filepath)
+
+                elif deletion.match(line):
+                    # Split line into its components.
+                    # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:REMOVE:0:
+                    date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
+                    self.deletion_list.append(filepath)
+
 
     def __iter__(self):
-        for file in self.file_list:
+        for file in self.deposit_list:
             yield file
 
     def __len__(self):
-        return len(self.file_list)
+        return len(self.deposit_list)
 
     def __getitem__(self, index):
-        return self.file_list[index]
+        return self.deposit_list[index]
 
     def read_log(self):
-        return self.file_list
+        return self.deposit_list
 
     def write_filelist(self, destination):
-        output = [x + "\n" for x in self.file_list]
+        output = [x + "\n" for x in self.deposit_list]
         with open(destination,'w') as writer:
             writer.writelines(output)
 
+    def write_deletionlist(self, destination):
+        output = [x + "\n" for x in self.deletion_list]
+        with open(destination,'w') as writer:
+            writer.writelines(output)
 
     def generate_md5(self, file):
         """
