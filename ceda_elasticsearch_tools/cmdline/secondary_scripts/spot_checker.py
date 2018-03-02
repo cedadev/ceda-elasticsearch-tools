@@ -28,6 +28,7 @@ import os
 import simplejson as json
 from elasticsearch import Elasticsearch
 from ceda_elasticsearch_tools.cmdline import __version__
+import hashlib
 
 
 def es_connection(host="jasmin-es1.ceda.ac.uk", port=9200):
@@ -41,22 +42,11 @@ def make_query(test_list, blocksize=800):
 
     for i, case in enumerate(test_list, 1):
 
-        dir = os.path.dirname(case)
-        filename = os.path.basename(case).strip()
         index = json.dumps({}) + "\n"
         query = json.dumps({
                                 "query": {
-                                    "bool": {
-                                        "must": [
-                                           {"match": {
-                                              "info.name": filename
-                                           }}
-                                        ],
-                                        "filter":{
-                                            "term": {
-                                               "info.directory": dir
-                                            }
-                                        }
+                                    "term":{
+                                        "_id": hashlib.sha1(case).hexdigest()
                                     }
                                 }
                             })
@@ -83,7 +73,7 @@ def process_list(es_connection, file_list, query_list, config):
     scroll_count = 0
 
     for mquery in query_list:
-        results = es_connection.msearch(index="ceda-level-1", body=mquery, request_timeout=120 )
+        results = es_connection.msearch(index=config["INDEX"], body=mquery, request_timeout=120 )
 
         for i, response in enumerate(results["responses"]):
             if response["hits"]["total"] > 0:
@@ -147,7 +137,6 @@ def main():
         filelist = input_file.readlines()
         query_list = make_query(filelist, config["BLOCKSIZE"])
 
-    output_name = os.path.basename(config["FILE"]).split('.txt')[0]
     process_list(es_conn, filelist, query_list, config)
 
 
