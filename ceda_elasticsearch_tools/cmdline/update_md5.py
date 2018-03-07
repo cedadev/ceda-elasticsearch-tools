@@ -88,7 +88,7 @@ def update_from_logs(arguments, index, log_dir):
         for spot in spots:
             # Only run files not found in the list of completed spots
             if spot not in completed_spots:
-                subprocess.call('md5.py -s {spot} -a {archive_root} -i {index} -o {log_dir}'.format(
+                subprocess.call('md5.py -i {index} -o {log_dir} -s {spot} -a {archive_root}'.format(
                     spot=spot,
                     archive_root=spots.get_archive_root(spot),
                     index=index,

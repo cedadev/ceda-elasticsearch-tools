@@ -4,9 +4,9 @@ This is a secondary script which is called by update_md5.py to do the heavy lift
 which contains the record _id and filepath of records which are missing MD5s and process them.
 
 Usage:
-    update_md5.py -h | --help
-    update_md5.py --version
-    update_md5.py
+    md5.py -h | --help
+    md5.py --version
+    md5.py
                    (-i INDEX                | --index   INDEX                   )
                    (-o OUTPUT               | --output OUTPUT                   )
                    [-s SPOT                 | --spot   SPOT                     ]
@@ -22,10 +22,10 @@ Options:
     -i  --index         Elasticsearch index to test
     -o  --output        Logging output directory.
     -s  --spot          Spot name
-    -a  --archive_root  Root path on the archive mapped to spot.
+    -a  --archive_root  Root path on the archive mapped to spot eg. /neodc/sentinel1a/data/IW/L1_SLC/IPF_v2/2018/03/06
     -h  --hostname      Elasticsearch host to query [default: jasmin-es1.ceda.ac.uk]
     -p  --port          Elasticsearch read/write port [default: 9200]
-    --pagefile          File containing id and path information
+    --pagefile          File containing elasticsearch _id and path information
 
 """
 from docopt import docopt
@@ -36,7 +36,13 @@ from ceda_elasticsearch_tools.cmdline import __version__
 import hashlib
 import simplejson as json
 
+
 def logger_setup(log_dir):
+    """
+    Setup the logger
+    :param log_dir: Output directory to place the logs
+    :return: logging object
+    """
 
     FORMAT = "%(levelname)s %(asctime)-15s %(message)s"
 
@@ -52,12 +58,19 @@ def logger_setup(log_dir):
 
     return logging.getLogger(__name__)
 
+
 def file_md5(fname):
+    """
+    Calculates the MD5 checksum based on the file content.
+    :param fname: File to calculate md5 for
+    :return: MD5 checksum hex value
+    """
     hash_md5 = hashlib.md5()
     with open(fname,'rb') as f:
         for chunk in iter(lambda: f.read(4096),b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
 
 def main():
     arguments = docopt(__doc__, version=__version__)
@@ -86,8 +99,7 @@ def main():
     # Initialise the elasticsearch updater instance
     update = updater.ElasticsearchUpdater(index=index, host=host, port=port)
 
-
-    if pagefile == None:
+    if pagefile is None:
         # Are processing log files by spot
 
         logger.info('Analysing {}'.format(spot))
@@ -95,7 +107,6 @@ def main():
         # Update MD5s for given spot
         start = datetime.now()
         update.update_md5(spot, archive_root)
-
 
         logger.info("Spot: {}  Update took: {}".format(spot, datetime.now() - start))
 
