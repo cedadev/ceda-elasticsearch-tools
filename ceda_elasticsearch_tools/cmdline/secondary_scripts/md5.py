@@ -1,7 +1,7 @@
 
 """
-Update MD5. Use this script to scan a spot logfile, gather the md5 checksums, query Elasticsearch to see if md5 matches
-and if not, update it using the Elasticsearch Bulk API.
+This is a secondary script which is called by update_md5.py to do the heavy lifting. This will take a file from disk
+which contains the record _id and filepath of records which are missing MD5s and process them.
 
 Usage:
     update_md5.py -h | --help

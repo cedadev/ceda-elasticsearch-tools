@@ -26,7 +26,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.8',
+    version='0.1.9',
 
     description='Extension of the basic elasticsearch python wrapper to perform operations with a given ES index.',
     long_description=long_description,
@@ -83,7 +83,7 @@ setup(
             'nla_sync_es.py=ceda_elasticsearch_tools.cmdline.nla_sync_es:main',
             'nla_sync_lotus_task.py=ceda_elasticsearch_tools.cmdline.secondary_scripts.nla_sync_lotus_task:main',
             'update_md5.py=ceda_elasticsearch_tools.cmdline.update_md5:main',
-            'md5.py=ceda_elasticsearch_tools.cmdline.md5:main',
+            'md5.py=ceda_elasticsearch_tools.cmdline.secondary_scripts.md5:main',
             'fbs_missing_files.py=ceda_elasticsearch_tools.cmdline.fbs_missing_files:main',
             'spot_checker.py=ceda_elasticsearch_tools.cmdline.secondary_scripts.spot_checker:main',
             'fbs_live_index=ceda_elasticsearch_tools.cmdline.deposit:main',
