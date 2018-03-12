@@ -34,6 +34,21 @@ def percent(total, value):
     else:
         return round((float(value)/ total) * 100,2)
 
+def get_latest_log(dir, prefix):
+    """
+    Get the latest log file.
+
+    :param dir: The directory to test
+    :param prefix: The log specific file prefix.
+
+    :return: The most recent log file.
+    """
+    try:
+        latest =  sorted([dr for dr in os.listdir(dir) if dr.startswith(prefix)])[-1]
+        return latest
+    except IndexError:
+        return None
+
 class ProgressBar(object):
 
     def __init__(self, endvalue, label='Percent', bar_length=50):

@@ -11,8 +11,8 @@ Options:
     --version           Show Version.
     -d --dir            Directory to put the lists created from deposit logs and to read from for the scanning.
     -l --level          Elasticsearch detail level
-    -logdir             Logging directory
     -i --index          Index to modify
+    -logdir             Logging directory
 
 
 
