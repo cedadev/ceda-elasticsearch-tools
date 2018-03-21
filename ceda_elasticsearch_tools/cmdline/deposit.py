@@ -48,13 +48,14 @@ def setup_logging(config):
     return logger
 
 
-def delete_json(file_list):
+def delete_json(file_list, config):
     bulk_delete_json = ""
 
     for file in file_list:
         file_id = hashlib.sha1(file).hexdigest()
-        bulk_delete_json += json.dumps({"delete": {"_index": "delete-test", "file": "file", "_id": file_id}}) + '\n'
+        bulk_delete_json += json.dumps({"delete": {"_index": config["INDEX"], "_type": "file", "_id": file_id}}) + '\n'
 
+    print bulk_delete_json
     return bulk_delete_json
 
 
@@ -119,7 +120,7 @@ def main():
             fail = 0
 
             # Create json to request deletion
-            delete_request = delete_json(dl.deletion_list)
+            delete_request = delete_json(dl.deletion_list, config)
             es = Elasticsearch([{"host":"jasmin-es1.ceda.ac.uk","port":9200}])
             r = es.bulk(index=config["INDEX"], body=delete_request)
 
