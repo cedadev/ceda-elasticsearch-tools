@@ -20,40 +20,45 @@ class SpotMapping(object):
     spot2pathmapping = {}
     path2spotmapping = {}
 
-    def __init__(self, test=False, from_file=False, spot_file=None):
+    def __init__(self, test=False, spot_file=None):
 
         if test:
             self.spot2pathmapping['spot-1400-accacia'] = "/badc/accacia"
             self.spot2pathmapping['abacus'] = "/badc/abacus"
 
-        elif from_file:
+        elif spot_file:
             with open(spot_file) as reader:
-                lines = reader.readlines()
-                for line in lines:
-                    spot, path = line.strip().split('=')
-                    self.spot2pathmapping[spot] = path
-                    self.path2spotmapping[path] = spot
+                spot_mapping = reader.readlines()
+
+            self._build_mapping(spot_mapping)
 
         else:
             response = requests.get(self.url)
-            log_mapping = response.text.split('\n')
+            spot_mapping = response.text.split('\n')
 
-            for line in log_mapping:
-                if not line.strip(): continue
-                try:
-                    spot, path = line.strip().split()
-                except ValueError:
-                    print response.text
-                    exit()
-                if spot in ("spot-2502-backup-test",): continue
-                self.spot2pathmapping[spot] = path
-                self.path2spotmapping[path] = spot
+            self._build_mapping(spot_mapping)
+
 
     def __iter__(self):
         return iter(self.spot2pathmapping)
 
     def __len__(self):
         return len(self.spot2pathmapping)
+
+    def _build_mapping(self, spot_mapping):
+        """
+        Build the spot mapping dictionaries
+        :param spot_mapping: list of mappings
+        """
+
+        for line in spot_mapping:
+            if not line.strip(): continue
+            spot, path = line.strip().split()
+
+            if spot in ("spot-2502-backup-test",): continue
+            self.spot2pathmapping[spot] = path
+            self.path2spotmapping[path] = spot
+
 
     def get_archive_root(self, key):
         """
