@@ -87,7 +87,11 @@ class SpotMapping(object):
         """
         storage_suffix = path.split('archive/')[1]
         spot = storage_suffix.split('/')[0]
-        suffix = storage_suffix.split(spot+'/')[1]
+        try:
+            suffix = storage_suffix.split(spot + '/')[1]
+
+        except IndexError:
+            suffix = None
 
         return spot, suffix
 
@@ -98,7 +102,11 @@ class SpotMapping(object):
 
         spot_path = self.get_archive_root(spot)
 
-        archive_path = os.path.join(spot_path,suffix)
+        try:
+            archive_path = os.path.join(spot_path, suffix)
+
+        except AttributeError:
+            archive_path = spot_path
 
         return archive_path
 
@@ -159,7 +167,6 @@ class MD5LogFile(object):
             if len(self.md5s) == 0:
                 pass
                 # print("md5s not found in logfile: %s" % log_path)
-
 
     def __len__(self):
         return len(self.md5s)
@@ -233,7 +240,6 @@ class DepositLog(object):
                     date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.deletion_list.append(filepath)
 
-
     def __iter__(self):
         for file in self.deposit_list:
             yield file
@@ -249,12 +255,12 @@ class DepositLog(object):
 
     def write_filelist(self, destination):
         output = [x + "\n" for x in self.deposit_list]
-        with open(destination,'w') as writer:
+        with open(destination, 'w') as writer:
             writer.writelines(output)
 
     def write_deletionlist(self, destination):
         output = [x + "\n" for x in self.deletion_list]
-        with open(destination,'w') as writer:
+        with open(destination, 'w') as writer:
             writer.writelines(output)
 
     def generate_md5(self, file):
@@ -294,8 +300,3 @@ class DepositLog(object):
             result = esu.check_files_existence(log_data)
             if result["False"]:
                 print(log, len(result["False"]), "Processing took: %s" % (datetime.now() - start))
-
-
-
-
-
