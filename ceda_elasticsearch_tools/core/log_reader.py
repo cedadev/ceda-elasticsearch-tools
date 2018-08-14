@@ -40,7 +40,11 @@ class SpotMapping(object):
 
             for line in log_mapping:
                 if not line.strip(): continue
-                spot, path = line.strip().split()
+                try:
+                    spot, path = line.strip().split()
+                except ValueError:
+                    print response.text
+                    exit()
                 if spot in ("spot-2502-backup-test",): continue
                 self.spot2pathmapping[spot] = path
                 self.path2spotmapping[path] = spot
