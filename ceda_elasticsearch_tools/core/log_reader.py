@@ -30,7 +30,7 @@ class SpotMapping(object):
             with open(spot_file) as reader:
                 spot_mapping = reader.readlines()
 
-            self._build_mapping(spot_mapping)
+            self._build_mapping(spot_mapping, sep='=')
 
         else:
             response = requests.get(self.url)
@@ -45,7 +45,7 @@ class SpotMapping(object):
     def __len__(self):
         return len(self.spot2pathmapping)
 
-    def _build_mapping(self, spot_mapping):
+    def _build_mapping(self, spot_mapping, sep=None):
         """
         Build the spot mapping dictionaries
         :param spot_mapping: list of mappings
@@ -53,7 +53,7 @@ class SpotMapping(object):
 
         for line in spot_mapping:
             if not line.strip(): continue
-            spot, path = line.strip().split()
+            spot, path = line.strip().split(sep)
 
             if spot in ("spot-2502-backup-test",): continue
             self.spot2pathmapping[spot] = path
