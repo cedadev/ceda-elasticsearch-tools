@@ -222,6 +222,9 @@ class DepositLog(object):
         # Make sure deposit_list/deletion_list is clear before reading file.
         self.deposit_list = []
         self.deletion_list = []
+        self.mkdir_list = []
+        self.rmdir_list = []
+        self.symlink_list = []
 
         if log_filename is None:
             # If no log file provided, use the penultimate log file. eg. Most recent complete log file.
@@ -234,6 +237,12 @@ class DepositLog(object):
             deposit = re.compile("^\d{4}[-](\d{2})[-]\d{2}.*:DEPOSIT:")
 
             deletion = re.compile("^\d{4}[-](\d{2})[-]\d{2}.*:REMOVE:")
+
+            mkdir = re.compile("^\d{4}[-](\d{2})[-]\d{2}.*:MKDIR:")
+
+            rmdir = re.compile("^\d{4}[-](\d{2})[-]\d{2}.*:RMDIR:")
+
+            symlink = re.compile("^\d{4}[-](\d{2})[-]\d{2}.*:SYMLINK:")
 
             for line in reader:
                 # Check line matches expression. ie. starts with a date and matches action DEPOSIT.
@@ -249,6 +258,24 @@ class DepositLog(object):
                     date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.deletion_list.append(filepath)
 
+                elif mkdir.match(line):
+                    # Split line into its components.
+                    # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:REMOVE:0:
+                    date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
+                    self.mkdir_list.append(filepath)
+
+                elif rmdir.match(line):
+                    # Split line into its components.
+                    # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:REMOVE:0:
+                    date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
+                    self.rmdir_list.append(filepath)
+
+                elif symlink.match(line):
+                    # Split line into its components.
+                    # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:REMOVE:0:
+                    date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
+                    self.symlink_list.append(filepath)
+
     def __iter__(self):
         for file in self.deposit_list:
             yield file
@@ -256,8 +283,22 @@ class DepositLog(object):
     def __len__(self):
         return len(self.deposit_list)
 
-    def __getitem__(self, index):
-        return self.deposit_list[index]
+    def __getitem__(self, index, action="DEPOSIT"):
+
+        if action == "DEPOSIT":
+            return self.deposit_list[index]
+
+        elif action == "REMOVE":
+            return self.deletion_list[index]
+
+        elif action == "MKDIR":
+            return self.mkdir_list[index]
+
+        elif action == "RMDIR":
+            return self.rmdir_list[index]
+
+        elif action == "SYMLINK":
+            return self.symlink_list[index]
 
     def read_log(self):
         return self.deposit_list

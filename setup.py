@@ -17,22 +17,19 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-with open('requirements.txt') as f:
-    required = f.readlines()
-
 setup(
     name='ceda-elasticsearch-tools',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.1.10',
+    version='0.2.0',
 
     description='Extension of the basic elasticsearch python wrapper to perform operations with a given ES index.',
     long_description=long_description,
 
     # The project's main homepage.
-    url='https://github.com/cedadev/CEDAElasticSearch-Tools.git',
+    url='https://github.com/cedadev/ceda-elasticsearch-tools.git',
 
     # Author details
     author='Richard Smith',
@@ -47,7 +44,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 5 - Beta',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
@@ -73,7 +70,11 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=required,
+    install_requires=[
+        'requests',
+        'elasticsearch',
+        'docopt'
+    ],
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
@@ -86,7 +87,7 @@ setup(
             'md5.py=ceda_elasticsearch_tools.cmdline.secondary_scripts.md5:main',
             'fbs_missing_files.py=ceda_elasticsearch_tools.cmdline.fbs_missing_files:main',
             'spot_checker.py=ceda_elasticsearch_tools.cmdline.secondary_scripts.spot_checker:main',
-            'fbs_live_index=ceda_elasticsearch_tools.cmdline.deposit:main',
+            'fbs_live_index=ceda_elasticsearch_tools.cmdline.fbs_live_index:main',
             'coverage_test=ceda_elasticsearch_tools.cmdline.ceda_eo.coverage_test:main'
         ],
     },

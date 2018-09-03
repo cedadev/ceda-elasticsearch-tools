@@ -2,9 +2,9 @@
 Script to be used as a cron job to keep elasticsearch up-to-date with arrivals.
 
 Usage:
-    deposit.py --help
-    deposit.py --version
-    deposit.py (-d DIR | --dir DIR )(-l LEVEL | --level LEVEL)(-i INDEX | --index INDEX)[--logdir LOGDIR]
+    fbs_live_index.py --help
+    fbs_live_index.py --version
+    fbs_live_index.py (-d DIR | --dir DIR )(-l LEVEL | --level LEVEL)(-i INDEX | --index INDEX)[--logdir LOGDIR]
 
 Options:
     --help              Display help.
