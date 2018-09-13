@@ -25,7 +25,6 @@ class IndexUpdaterBase():
         :param action_list: List of bulk index operations.
 
         """
-        errors = False
 
         for action in action_list:
             return self.es.bulk(index=self.index, body=action)
