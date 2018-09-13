@@ -1,10 +1,9 @@
 from elasticsearch import Elasticsearch
 import os
-import simplejson as json
+import json
 import re
 import logging
 from log_reader import MD5LogFile
-from datetime import datetime
 import util
 import hashlib
 

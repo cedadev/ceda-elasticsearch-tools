@@ -1,5 +1,4 @@
 from elasticsearch import Elasticsearch
-import hashlib
 import json
 
 

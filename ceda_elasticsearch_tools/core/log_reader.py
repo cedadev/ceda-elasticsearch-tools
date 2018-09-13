@@ -1,7 +1,5 @@
 import requests
-import os, sys
-from elasticsearch import Elasticsearch
-import simplejson as json
+import os
 import logging
 import re
 import hashlib
