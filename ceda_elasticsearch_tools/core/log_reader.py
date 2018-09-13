@@ -6,15 +6,15 @@ import logging
 import re
 import hashlib
 from datetime import datetime
-from ceda_elasticsearch_tools.core.util import get_latest_log
+from ceda_elasticsearch_tools.core.utils import get_latest_log
 
 
 class SpotMapping(object):
     """
     Downloads the spot mapping from the cedaarchiveapp.
     Makes two queryable dicts:
-        spot2pathmapping = provide spot and return file path
-        path2spotmapping = provide a file path and the spot will be returned
+        - spot2pathmapping = provide spot and return file path
+        - path2spotmapping = provide a file path and the spot will be returned
     """
     url = "http://cedaarchiveapp.ceda.ac.uk/cedaarchiveapp/fileset/download_conf/"
     spot2pathmapping = {}
@@ -225,6 +225,7 @@ class DepositLog(object):
         self.mkdir_list = []
         self.rmdir_list = []
         self.symlink_list = []
+        self.readme00_list = []
 
         if log_filename is None:
             # If no log file provided, use the penultimate log file. eg. Most recent complete log file.
@@ -244,13 +245,18 @@ class DepositLog(object):
 
             symlink = re.compile("^\d{4}[-](\d{2})[-]\d{2}.*:SYMLINK:")
 
+            readme00 = re.compile("^\d{4}[-](\d{2})[-]\d{2}.*00README:")
+
             for line in reader:
-                # Check line matches expression. ie. starts with a date and matches action DEPOSIT.
                 if deposit.match(line):
                     # Split line into its components.
                     # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:DEPOSIT:1388172: (force=None) /datacentre/arrivals/users/dartmetoffice/ukmo-msg/EWXT11_201708190300.png
                     date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.deposit_list.append(filepath)
+
+                    # Add to readme list if the deposited file is a 00README
+                    if readme00.match(line):
+                        self.readme00_list.append(filepath)
 
                 elif deletion.match(line):
                     # Split line into its components.
@@ -260,19 +266,16 @@ class DepositLog(object):
 
                 elif mkdir.match(line):
                     # Split line into its components.
-                    # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:REMOVE:0:
                     date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.mkdir_list.append(filepath)
 
                 elif rmdir.match(line):
                     # Split line into its components.
-                    # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:REMOVE:0:
                     date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.rmdir_list.append(filepath)
 
                 elif symlink.match(line):
                     # Split line into its components.
-                    # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:REMOVE:0:
                     date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.symlink_list.append(filepath)
 
@@ -299,6 +302,7 @@ class DepositLog(object):
 
         elif action == "SYMLINK":
             return self.symlink_list[index]
+
 
     def read_log(self):
         return self.deposit_list

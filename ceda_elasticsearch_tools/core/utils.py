@@ -1,6 +1,8 @@
 import subprocess
 from datetime import datetime, timedelta
 import sys
+import os
+import math
 
 def get_number_of_submitted_lotus_tasks():
 
@@ -20,7 +22,6 @@ def get_number_of_submitted_lotus_tasks():
 
     return num_of_running_tasks
 
-
 def _make_bsub_command(task):
     "Construct bsub command for task and return it."
     command = "bsub -q par-single -W 48:00 %s" % task
@@ -34,20 +35,44 @@ def percent(total, value):
     else:
         return round((float(value)/ total) * 100,2)
 
-def get_latest_log(dir, prefix):
+def get_latest_log(dir, prefix, rank=-1):
     """
-    Get the latest log file.
+    Get the log file from each stream with the given prefix and rank.
+    Logs are sorted in date oldest to newest. Positive rank will start at
+    at the old logs. 1 will return the oldest log, 2 the next oldest. Negative rank will be from newest backwards. -1 will return
+    the most recent log, -2 the penultimate log.
 
-    :param dir: The directory to test
-    :param prefix: The log specific file prefix.
+    :param dir:     The directory to test
+    :param prefix:  The log specific file prefix.
+    :param rank:    Which item to select. Defaults to the most recent.
 
-    :return: The most recent log file.
+    :return: List of logs for all streams with the given prefix and rank.
     """
-    try:
-        latest =  sorted([dr for dr in os.listdir(dir) if dr.startswith(prefix)])[-1]
-        return latest
-    except IndexError:
-        return None
+
+    # Get all logs in the directory
+    dir_listing = os.listdir(dir)
+
+    # Determine all ingest streams with the given prefix
+    ingest_streams = set([log.split('.')[0] for log in dir_listing if log.startswith(prefix)])
+
+    # Create output list
+    latest_logs = []
+    for stream in ingest_streams:
+
+        # Filter logs on the given stream
+        filtered_logs = [log for log in dir_listing if log.startswith(stream)]
+
+        # Check to make sure the rank is in acceptable range
+        if abs(rank) > len(filtered_logs):
+            # When rank is outside the range of the log list, return the last possible value.
+            rank = math.copysign(len(filtered_logs), rank)
+
+        # Find the log with correct rank
+        latest = sorted([log for log in filtered_logs if log.startswith(stream)])[rank]
+        latest_logs.append(latest)
+
+    return latest_logs
+
 
 class ProgressBar(object):
 
