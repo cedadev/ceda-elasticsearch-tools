@@ -17,6 +17,18 @@ class IndexUpdaterBase():
         self.index = index
         self.es = Elasticsearch(hosts=[{"host": host, "port": port}])
 
+    def _get_action_key(self, es_response_item):
+        """
+        Get the action key for processing the response
+        :param es_response_item:
+        :return: key
+        """
+
+        actions = ["update", "index", "delete"]
+        response_keys = es_response_item.keys()
+
+        return list(set(actions) & set(response_keys))[0]
+
     def _bulk_action(self, action_list):
         """
         Perform bulk action to elasticsearch
@@ -24,10 +36,12 @@ class IndexUpdaterBase():
         :param action_list: List of bulk index operations.
 
         """
-
+        response_list = []
         for action in action_list:
-            return self.es.bulk(index=self.index, body=action)
+            response = self.es.bulk(index=self.index, body=action)
+            response_list.append(response)
 
+        return self._process_bulk_action_response(response_list)
 
     def _generate_bulk_operation_body(self, content_list, type, action="index"):
         """
@@ -42,8 +56,6 @@ class IndexUpdaterBase():
         bulk_action_list = []
 
         for i, item in enumerate(content_list,1):
-            # path = item['path']
-            # id = hashlib.sha1(path).hexdigest()
             id = item["id"]
 
             if action == "index":
@@ -70,6 +82,48 @@ class IndexUpdaterBase():
             bulk_action_list.append(bulk_json)
 
         return bulk_action_list
+
+    def _process_bulk_action_response(self, action_response):
+        """
+        Process the bulk action response and generate a consilated report of actions
+        :param action_response: Response from elasticseach bulk api call
+        :return: Consolidated report
+        """
+
+        success = 0
+        failed = 0
+        items_failed = []
+
+        for action in action_response:
+            # If there are no errors in the high level json. All items succeeded
+            if not action["errors"]:
+                success += len(action["items"])
+
+            else:
+                # Some or all items failed
+                for item in action["items"]:
+                    print (item)
+                    action_key = self._get_action_key(item)
+
+                    # If 2xx HTTP response. Successful
+                    if 200 <= item[action_key]["status"] < 300:
+                        success += 1
+
+                    else:
+                        failed += 1
+
+                        id = item[action_key]["_id"]
+                        status = item[action_key]["status"]
+                        error = item[action_key]["error"]
+
+                        items_failed.append({
+                            "id": id,
+                            "status": status,
+                            "error": error
+                        })
+
+        return {"success": success, "failed": failed, "failed_items": items_failed}
+
 
 class CedaDirs(IndexUpdaterBase):
     """
@@ -120,12 +174,8 @@ class CedaDirs(IndexUpdaterBase):
         update_list = self._generate_bulk_operation_body(readme_content, type="dir", action="update")
 
         # Perform bulk action
-        errors = self._bulk_action(update_list)
+        return self._bulk_action(update_list)
 
-        if not errors:
-            return "Success"
-        else:
-            return "Failed"
 
     def add_dirs(self, directories):
         """
@@ -141,12 +191,8 @@ class CedaDirs(IndexUpdaterBase):
         bulk_operations =  self._generate_bulk_operation_body(directories, type="dir")
 
         # Perform bulk action
-        errors = self._bulk_action(bulk_operations)
+        return self._bulk_action(bulk_operations)
 
-        if not errors:
-            return "Success"
-        else:
-            return "Failed"
 
     def delete_dirs(self, directories):
         """
@@ -162,10 +208,23 @@ class CedaDirs(IndexUpdaterBase):
         bulk_operations = self._generate_bulk_operation_body(directories, type="dir", action='delete')
 
         # Perform bulk action
-        errors = self._bulk_action(bulk_operations)
+        return self._bulk_action(bulk_operations)
 
-        if not errors:
-            return "Success"
-        else:
-            return "Failed"
 
+class CedaFbi(IndexUpdaterBase):
+
+    def add_files(self):
+        pass
+
+    def delete_files(self, files):
+        """
+        Files have been removed from the file system and need to be removed from the index
+
+        :return:
+        """
+
+        # Generate action list
+        bulk_operations = self._generate_bulk_operation_body(files, type="file", action='delete')
+
+        # Perform bulk action
+        return self._bulk_action(bulk_operations)
