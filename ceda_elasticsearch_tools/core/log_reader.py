@@ -1,6 +1,5 @@
 import requests
 import os
-import logging
 import re
 import hashlib
 from datetime import datetime
@@ -198,7 +197,6 @@ class MD5LogFile(object):
         if path in self.md5s:
             return self.md5s[path]
         else:
-            logging.WARNING("MD5LogFile: get_md5. Unable to find md5 for %s" % path)
             return ""
 
 
@@ -323,7 +321,6 @@ class DepositLog(object):
         :return: md5 checksum or "" if file not found.
         """
         if not os.path.exists(file):
-            logging.WARNING("DepositLog: generate_md5. File does not exist: %s" % file)
             return ""
 
         hash_md5 = hashlib.md5()
