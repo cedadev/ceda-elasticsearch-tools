@@ -29,19 +29,36 @@ class IndexUpdaterBase():
 
         return list(set(actions) & set(response_keys))[0]
 
-    def _bulk_action(self, action_list):
+    def _bulk_action(self, action_list, api="bulk"):
         """
-        Perform bulk action to elasticsearch
+        Perform bulk action to elasticsearch. This is either bulk|msearch. Defualt: bulk
 
         :param action_list: List of bulk index operations.
+        :return Consolidated report.
+                    when api == bulk    returns {"success": int, "failed": int, "failed_items": list}
+                    when api == msearch returns list with three levels as described below
+                    [           # Container for the reponse
+                        [       # Collection of all the responses in a block as submitted to elasticsearch
+                            []  # Indiviual query responses
+                        ]
+                    ]
 
         """
+
         response_list = []
         for action in action_list:
-            response = self.es.bulk(index=self.index, body=action)
+
+            if api == "bulk":
+                response = self.es.bulk(index=self.index, body=action)
+            elif api == "msearch":
+                response = self.es.msearch(body=action)
+                print (response)
+            else:
+                raise ValueError("Invalid api selected. Must be of either bulk|msearch")
+
             response_list.append(response)
 
-        return self._process_bulk_action_response(response_list)
+        return self._process_bulk_action_response(response_list, api)
 
     def _generate_bulk_operation_body(self, content_list, type, action="index"):
         """
@@ -51,11 +68,10 @@ class IndexUpdaterBase():
         :param action:          The elasticsearch action to perform. (index[default], update, delete)
         :return:                List of actions to perform in batches of 800.
         """
-
         bulk_json = ""
         bulk_action_list = []
 
-        for i, item in enumerate(content_list,1):
+        for i, item in enumerate(content_list, 1):
             id = item["id"]
 
             if action == "index":
@@ -67,8 +83,15 @@ class IndexUpdaterBase():
                 body = json.dumps({"doc": item["document"]}) + "\n"
 
             elif action == "delete":
-                header = json.dumps({"delete" : {"_index": self.index, "_type": type, "_id": id}}) + "\n"
-                body=""
+                header = json.dumps({"delete": {"_index": self.index, "_type": type, "_id": id}}) + "\n"
+                body = ""
+
+            elif action == "search":
+                header = json.dumps({"index": self.index}) + "\n"
+                body = json.dumps(item["query"]) + "\n"
+
+            else:
+                raise ValueError("Incorrect action supplied. Must be of either index|update|delete|search")
 
             bulk_json += header + body
 
@@ -83,46 +106,63 @@ class IndexUpdaterBase():
 
         return bulk_action_list
 
-    def _process_bulk_action_response(self, action_response):
+    def _process_bulk_action_response(self, action_response, api):
         """
         Process the bulk action response and generate a consilated report of actions
         :param action_response: Response from elasticseach bulk api call
         :return: Consolidated report
         """
 
-        success = 0
-        failed = 0
-        items_failed = []
+        if api == "bulk":
+            success = 0
+            failed = 0
+            items_failed = []
 
-        for action in action_response:
-            # If there are no errors in the high level json. All items succeeded
-            if not action["errors"]:
-                success += len(action["items"])
+            for action in action_response:
+                # If there are no errors in the high level json. All items succeeded
+                if not action["errors"]:
+                    success += len(action["items"])
 
-            else:
-                # Some or all items failed
-                for item in action["items"]:
-                    print (item)
-                    action_key = self._get_action_key(item)
+                else:
+                    # Some or all items failed
+                    for item in action["items"]:
+                        print (item)
+                        action_key = self._get_action_key(item)
 
-                    # If 2xx HTTP response. Successful
-                    if 200 <= item[action_key]["status"] < 300:
-                        success += 1
+                        # If 2xx HTTP response. Successful
+                        if 200 <= item[action_key]["status"] < 300:
+                            success += 1
 
-                    else:
-                        failed += 1
+                        else:
+                            failed += 1
 
-                        id = item[action_key]["_id"]
-                        status = item[action_key]["status"]
-                        error = item[action_key]["error"]
+                            id = item[action_key]["_id"]
+                            status = item[action_key]["status"]
+                            error = item[action_key]["error"]
 
-                        items_failed.append({
-                            "id": id,
-                            "status": status,
-                            "error": error
-                        })
+                            items_failed.append({
+                                "id": id,
+                                "status": status,
+                                "error": error
+                            })
 
-        return {"success": success, "failed": failed, "failed_items": items_failed}
+            return {"success": success, "failed": failed, "failed_items": items_failed}
+
+        elif api == "msearch":
+
+            msearch_action_response = []
+            for action in action_response:
+                response_hits = []
+
+                for response in action["responses"]:
+                    response_hits.append(response["hits"]["hits"])
+
+                msearch_action_response.append(response_hits)
+
+            return msearch_action_response
+
+        else:
+            raise ValueError("Invalid api selected. Must be of either bulk|msearch")
 
 
 class CedaDirs(IndexUpdaterBase):
@@ -176,7 +216,6 @@ class CedaDirs(IndexUpdaterBase):
         # Perform bulk action
         return self._bulk_action(update_list)
 
-
     def add_dirs(self, directories):
         """
         New directories have been added to the archive. Add directories to directories index
@@ -188,11 +227,10 @@ class CedaDirs(IndexUpdaterBase):
         """
 
         # Generate action list
-        bulk_operations =  self._generate_bulk_operation_body(directories, type="dir")
+        bulk_operations = self._generate_bulk_operation_body(directories, type="dir")
 
         # Perform bulk action
         return self._bulk_action(bulk_operations)
-
 
     def delete_dirs(self, directories):
         """
@@ -228,3 +266,30 @@ class CedaFbi(IndexUpdaterBase):
 
         # Perform bulk action
         return self._bulk_action(bulk_operations)
+
+    def check_files_existence(self, file_list):
+        """
+        Wrapper class to underlying operations. Takes a file list and returns a
+        list containing the JSON response formatted as below:
+
+        [           # Container for the reponse
+            [       # Collection of all the responses in a block as submitted to elasticsearch
+                []  # Indiviual query responses
+            ]
+        ]
+
+
+        :param file_list:   List of files to test
+        :return: List of JSON response objects
+
+        """
+
+        bulk_info = []
+        for file in file_list:
+            pass
+
+
+
+        bulk_operations = self._generate_bulk_operation_body(bulk_info, type="file", action="search")
+
+        return self._bulk_action(bulk_operations, api="msearch")
