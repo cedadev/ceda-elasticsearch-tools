@@ -5,10 +5,8 @@ import hashlib
 from datetime import datetime
 from ceda_elasticsearch_tools.core.utils import get_latest_log
 
-# Remove logging message when running script
 import logging
 
-logging.getLogger("requests").setLevel(logging.WARNING)
 
 class SpotMapping(object):
     """
@@ -20,6 +18,9 @@ class SpotMapping(object):
     url = "http://cedaarchiveapp.ceda.ac.uk/cedaarchiveapp/fileset/download_conf/"
     spot2pathmapping = {}
     path2spotmapping = {}
+
+    # Remove logging message when running script
+    logging.getLogger("requests").setLevel(logging.WARNING)
 
     def __init__(self, test=False, spot_file=None):
 
