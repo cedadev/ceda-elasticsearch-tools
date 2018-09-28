@@ -5,9 +5,10 @@ import hashlib
 from datetime import datetime
 from ceda_elasticsearch_tools.core.utils import get_latest_log
 
-# Monkey patch to remove info logging message when run on python <2.7.9
-import ssl
-ssl.match_hostname = lambda cert, hostname: True
+# Remove logging message when running script
+import logging
+
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 class SpotMapping(object):
     """
