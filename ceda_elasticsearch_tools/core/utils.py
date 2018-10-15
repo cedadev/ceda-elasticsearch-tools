@@ -73,6 +73,10 @@ def get_latest_log(dir, prefix, rank=-1):
 
     return latest_logs
 
+def list2file_newlines(list_obj, filename):
+
+    with open(filename, 'w') as writer:
+        writer.writelines(map(lambda x: x+"\n", list_obj))
 
 class ProgressBar(object):
 

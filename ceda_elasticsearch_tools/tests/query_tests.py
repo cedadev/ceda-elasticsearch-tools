@@ -3,13 +3,13 @@ Test queries for elasticsearch
 """
 import unittest
 import requests
-import simplejson as json
+import json
 from bs4 import BeautifulSoup
+import sys
 
 import testQueries as tq
 
-# ELASTIC_URL = "http://jasmin-es1.ceda.ac.uk:9200"
-ELASTIC_URL = "http://jasmin-es-test.ceda.ac.uk:9200"
+ELASTIC_URL = "http://jasmin-es1.ceda.ac.uk:9200"
 
 
 class TestClusterHealth(unittest.TestCase):
@@ -50,7 +50,7 @@ class TestClusterHealth(unittest.TestCase):
         """
         self.assertEqual(self.nodeTotal, 8)
 
-    def testActiveShartPercentage(self):
+    def testActiveShardPercentage(self):
         """
         Healthy cluster should register 100%
         """
@@ -228,7 +228,7 @@ class TestIndexMapping(unittest.TestCase):
         mapping = tq.IndexMappings.cedadiMapping()
         r = requests.put(url=ELASTIC_URL + self.test_index, data=json.dumps(mapping), headers={"Content-Type": "application/json"})
         if r.status_code != 200:
-            print r.json()
+            print (r.json())
 
         self.assertEqual(r.status_code,200)
 

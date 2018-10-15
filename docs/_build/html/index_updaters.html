@@ -152,75 +152,162 @@
   <div class="section" id="index-updaters">
 <h1>Index Updaters<a class="headerlink" href="#index-updaters" title="Permalink to this headline">¶</a></h1>
 <blockquote>
-<div><span class="target" id="module-ceda_elasticsearch_tools.core.index_updaters"></span><dl class="class">
-<dt id="ceda_elasticsearch_tools.core.index_updaters.IndexUpdaterBase">
-<em class="property">class </em><code class="descclassname">ceda_elasticsearch_tools.core.index_updaters.</code><code class="descname">IndexUpdaterBase</code><span class="sig-paren">(</span><em>index</em>, <em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.core.index_updaters.IndexUpdaterBase" title="Permalink to this definition">¶</a></dt>
+<div><span class="target" id="module-ceda_elasticsearch_tools.index_tools.index_updaters"></span><dl class="class">
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.IndexUpdaterBase">
+<em class="property">class </em><code class="descclassname">ceda_elasticsearch_tools.index_tools.index_updaters.</code><code class="descname">IndexUpdaterBase</code><span class="sig-paren">(</span><em>index</em>, <em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.IndexUpdaterBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for index updaters. Contains common methods.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="ceda_elasticsearch_tools.core.index_updaters.CedaDirs">
-<em class="property">class </em><code class="descclassname">ceda_elasticsearch_tools.core.index_updaters.</code><code class="descname">CedaDirs</code><span class="sig-paren">(</span><em>index</em>, <em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.core.index_updaters.CedaDirs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class to aide in updating and managing the ceda-dirs index</p>
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs">
+<em class="property">class </em><code class="descclassname">ceda_elasticsearch_tools.index_tools.index_updaters.</code><code class="descname">CedaDirs</code><span class="sig-paren">(</span><em>index</em>, <em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to aide in updating and managing the ceda-dirs index. Includes hooks to allow MOLES
+to trigger changes in the directory index.</p>
 <dl class="method">
-<dt id="ceda_elasticsearch_tools.core.index_updaters.CedaDirs.update_title">
-<code class="descname">update_title</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.core.index_updaters.CedaDirs.update_title" title="Permalink to this definition">¶</a></dt>
-<dd><p>MOLES title has been changed. Update titles for all records matching url</p>
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.backfill_above_path">
+<code class="descname">backfill_above_path</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.backfill_above_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Backfill MOLES collection information above given path.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Status code</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> – Path to back fill metadata from</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="ceda_elasticsearch_tools.core.index_updaters.CedaDirs.update_path">
-<code class="descname">update_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.core.index_updaters.CedaDirs.update_path" title="Permalink to this definition">¶</a></dt>
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.update_title">
+<code class="descname">update_title</code><span class="sig-paren">(</span><em>url</em>, <em>title</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.update_title" title="Permalink to this definition">¶</a></dt>
+<dd><p>MOLES title has been changed. Update titles for all records matching url.</p>
+<p>Process:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Update</span> <span class="n">by</span> <span class="n">query</span> <span class="n">based</span> <span class="n">on</span> <span class="n">url</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>url</strong> – MOLES record URL</li>
+<li><strong>title</strong> – New title to apply</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.update_path">
+<code class="descname">update_path</code><span class="sig-paren">(</span><em>url</em>, <em>new_path</em>, <em>title</em>, <em>record_type='dataset'</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.update_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>MOLES record path has been changed. Update directories to have correct information.</p>
+<p>Process:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Get</span> <span class="nb">all</span> <span class="n">matching</span> <span class="n">records</span> <span class="n">by</span> <span class="n">url</span>
+<span class="mf">2.</span> <span class="n">Get</span> <span class="nb">all</span> <span class="n">matching</span> <span class="n">records</span> <span class="n">by</span> <span class="n">new</span> <span class="n">path</span>
+<span class="mf">3.</span> <span class="n">Diff</span> <span class="n">the</span> <span class="n">results</span> <span class="n">to</span> <span class="n">get</span> <span class="n">back_fill</span> <span class="nb">list</span>
+<span class="mf">4.</span> <span class="n">Clear</span> <span class="n">MOLES</span> <span class="n">information</span> <span class="k">for</span> <span class="nb">all</span> <span class="n">matching</span> <span class="n">records</span>
+<span class="mf">5.</span> <span class="n">Apply</span> <span class="n">MOLES</span> <span class="n">information</span> <span class="n">to</span> <span class="nb">all</span> <span class="n">records</span> <span class="n">matching</span> <span class="n">paths</span>
+<span class="mf">6.</span> <span class="n">Back</span> <span class="n">fill</span> <span class="n">after</span> <span class="n">change</span><span class="p">:</span>
+
+    <span class="o">-</span> <span class="n">Take</span> <span class="n">difference</span> <span class="n">between</span> <span class="n">queries</span>
+    <span class="o">-</span> <span class="n">Poll</span> <span class="n">MOLES</span> <span class="n">API</span> <span class="n">to</span> <span class="n">get</span> <span class="n">dataset</span><span class="o">/</span><span class="n">collection</span> <span class="n">info</span>
+    <span class="o">-</span> <span class="n">Apply</span> <span class="n">to</span> <span class="n">reduced</span> <span class="nb">set</span> <span class="n">of</span> <span class="n">files</span>
+<span class="mf">7.</span> <span class="n">Back</span> <span class="n">fill</span> <span class="n">above</span> <span class="n">new</span> <span class="n">location</span>
+</pre></div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Status code</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>url</strong> – URL for the dataset/collection</li>
+<li><strong>new_path</strong> – New path to apply metadata to</li>
+<li><strong>title</strong> – Title of the MOLES record</li>
+<li><strong>record_type</strong> – MOLES record type. (default: dataset)</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="ceda_elasticsearch_tools.core.index_updaters.CedaDirs.update_dataset">
-<code class="descname">update_dataset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.core.index_updaters.CedaDirs.update_dataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>A new dataset has been created in MOLES. Add dataset information to relevant directories</p>
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.update_dataset">
+<code class="descname">update_dataset</code><span class="sig-paren">(</span><em>url</em>, <em>path</em>, <em>title</em>, <em>record_type='dataset'</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.update_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>A new dataset has been created in MOLES. Add dataset information to relevant directories.</p>
+<p>Process:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Update</span> <span class="n">by</span> <span class="n">query</span> <span class="n">below</span> <span class="n">path</span>
+<span class="mf">2.</span> <span class="n">Back</span> <span class="n">fill</span> <span class="n">above</span> <span class="n">new</span> <span class="n">location</span>
+</pre></div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Status code</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>url</strong> – MOLES URL to add to matches</li>
+<li><strong>path</strong> – Directory path to update dataset information below</li>
+<li><strong>title</strong> – MOLES record title to add to matches</li>
+<li><strong>record_type</strong> – MOLES record type. (default: dataset)</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="ceda_elasticsearch_tools.core.index_updaters.CedaDirs.update_collection">
-<code class="descname">update_collection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.core.index_updaters.CedaDirs.update_collection" title="Permalink to this definition">¶</a></dt>
-<dd><p>A new collection has been created in MOLES. Add collection information to relevant directories</p>
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.update_collection">
+<code class="descname">update_collection</code><span class="sig-paren">(</span><em>paths</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.update_collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>A new collection has been created in MOLES. Add collection information to relevant directories.</p>
+<p>Process:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">Back</span> <span class="n">fill</span> <span class="n">paths</span> <span class="k">with</span> <span class="n">collection</span>
+</pre></div>
+</div>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Status code</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>paths</strong> – List of paths to update</td>
 </tr>
 </tbody>
 </table>
 </dd></dl>
 
 <dl class="method">
-<dt id="ceda_elasticsearch_tools.core.index_updaters.CedaDirs.add_dirs">
-<code class="descname">add_dirs</code><span class="sig-paren">(</span><em>directories</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.core.index_updaters.CedaDirs.add_dirs" title="Permalink to this definition">¶</a></dt>
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.delete_catalogue_record">
+<code class="descname">delete_catalogue_record</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.delete_catalogue_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete MOLES information for records matching url</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>url</strong> – URL of deleted MOLES record</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.update_readmes">
+<code class="descname">update_readmes</code><span class="sig-paren">(</span><em>readme_content</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.update_readmes" title="Permalink to this definition">¶</a></dt>
+<dd><p>A new 00README has been added to the archive. Update directories with new content.
+Will fail if the directory does not already exist in the index.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Status - Success|Failed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.add_dirs">
+<code class="descname">add_dirs</code><span class="sig-paren">(</span><em>directories</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.add_dirs" title="Permalink to this definition">¶</a></dt>
 <dd><p>New directories have been added to the archive. Add directories to directories index</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -236,8 +323,8 @@ eg. [{“path”: “/neodc/sentinel1b/data/IW/L1_SLC/IPF_v2/2018/09, “record_
 </dd></dl>
 
 <dl class="method">
-<dt id="ceda_elasticsearch_tools.core.index_updaters.CedaDirs.delete_dirs">
-<code class="descname">delete_dirs</code><span class="sig-paren">(</span><em>directories</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.core.index_updaters.CedaDirs.delete_dirs" title="Permalink to this definition">¶</a></dt>
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.delete_dirs">
+<code class="descname">delete_dirs</code><span class="sig-paren">(</span><em>directories</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaDirs.delete_dirs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Directories have been deleted from the archive. Remove directories from the index.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -247,6 +334,81 @@ eg. [{“path”: “/neodc/sentinel1b/data/IW/L1_SLC/IPF_v2/2018/09, “record_
 eg. [{“path”: “/neodc/sentinel1b/data/IW/L1_SLC/IPF_v2/2018/09”}, …]</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Status - Success|Failed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaFbi">
+<em class="property">class </em><code class="descclassname">ceda_elasticsearch_tools.index_tools.index_updaters.</code><code class="descname">CedaFbi</code><span class="sig-paren">(</span><em>index</em>, <em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaFbi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class to aide in updating and managing the ceda-fbi index.</p>
+<dl class="method">
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaFbi.delete_files">
+<code class="descname">delete_files</code><span class="sig-paren">(</span><em>files</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaFbi.delete_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Files have been removed from the file system and need to be removed from the index</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaFbi.check_dir_count">
+<code class="descname">check_dir_count</code><span class="sig-paren">(</span><em>dir_list</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaFbi.check_dir_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of directories and counts the number of hits in each directory.
+Returned as raw elasticsearch response:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;responses&quot;</span><span class="p">:[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;hits:[],</span>
+            <span class="s2">&quot;aggregations&quot;</span><span class="p">:{</span>
+                <span class="s2">&quot;file_count&quot;</span><span class="p">:{</span>
+                    <span class="s2">&quot;value&quot;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">count</span><span class="o">&gt;</span><span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">]},</span><span class="o">...</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dir_list</strong> – List of directories</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ceda_elasticsearch_tools.index_tools.index_updaters.CedaFbi.check_files_existence">
+<code class="descname">check_files_existence</code><span class="sig-paren">(</span><em>file_list</em><span class="sig-paren">)</span><a class="headerlink" href="#ceda_elasticsearch_tools.index_tools.index_updaters.CedaFbi.check_files_existence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper class to underlying operations. Takes a file list and returns a
+list containing the JSON response formatted as below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>           <span class="c1"># Container for the reponse</span>
+    <span class="p">[</span>       <span class="c1"># Collection of all the responses in a block as submitted to elasticsearch</span>
+        <span class="p">[]</span>  <span class="c1"># Indiviual query responses</span>
+    <span class="p">]</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_list</strong> – List of files to test</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List of JSON response objects</td>
 </tr>
 </tbody>
 </table>
