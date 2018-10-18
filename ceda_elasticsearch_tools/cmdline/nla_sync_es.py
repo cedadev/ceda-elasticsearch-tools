@@ -151,12 +151,12 @@ def main():
         print("Writing file list batches.")
         # Split files_on_tape into chunks of 10k and write to disk
 
-        for i,files in enumerate(chunk_dict(files_on_tape,10000)):
+        for i,files in enumerate(chunk_dict(files_on_tape,2000)):
             with open(os.path.join(BATCH_DIR,"on_tape","on_tape_batch_{}.json".format(i)),'w') as writer:
                 # writer.writelines([x + "\n" for x in files])
                 json.dump(files, writer)
 
-        for i,files in enumerate(chunk_dict(files_on_disk,10000)):
+        for i,files in enumerate(chunk_dict(files_on_disk,2000)):
             with open(os.path.join(BATCH_DIR,"on_disk","on_disk_batch_{}.json".format(i)),'w') as writer:
                 # writer.writelines([x+"\n" for x in files])
                 json.dump(files,writer)

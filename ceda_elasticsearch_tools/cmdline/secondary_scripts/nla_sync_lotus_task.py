@@ -33,6 +33,7 @@ from docopt import docopt
 
 from ceda_elasticsearch_tools.core import updater
 from ceda_elasticsearch_tools.core.updater import ElasticsearchQuery
+from ceda_elasticsearch_tools.core.log_reader import SpotMapping
 import pkg_resources
 import os
 import simplejson as json
@@ -46,6 +47,7 @@ class NLASync():
     def __init__(self, config):
         self.CONFIG = config
         self.location = None
+        self.spots = SpotMapping(spot_file='ceda_all_datasets.ini')
 
         if config['--on-disk']:
             self.location = True
@@ -106,8 +108,13 @@ class NLASync():
         info['name_auto'] = info['name']
         info['directory'] = os.path.dirname(file_path)
         info['location'] = "on_tape"
-        info['size'] = round(self.file_dict[file_path] / (1024 * 1024.0), 3)
+        info['size'] = self.file_dict[file_path]
         info['md5'] = ""
+
+        spot = self.spots.get_spot(file_path)
+
+        if spot is not None:
+            info['spot_name'] = spot
 
         file_type = os.path.splitext(info['name'])[1]
         if len(file_type) == 0:

@@ -4,7 +4,7 @@ import json
 import re
 import logging
 from log_reader import MD5LogFile
-import util
+import utils
 import hashlib
 
 
@@ -438,7 +438,7 @@ class ElasticsearchUpdater(object):
             spot_path,
             len(result["True"]),
             len(result["False"]),
-            util.percent(len(spotlog), len(result["True"]))
+            utils.percent(len(spotlog), len(result["True"]))
         )
         )
 
