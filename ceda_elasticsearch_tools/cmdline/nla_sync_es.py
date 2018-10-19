@@ -54,7 +54,7 @@ def create_output_dir(output_dir, batch_dir):
     """
     Makes sure that the output directories are in place and clean, ready for the sync
     """
-    print("Creating output dir")
+    print("Creating output dir: {}".format(output_dir))
     if os.path.isdir(output_dir):
         # Make sure to always start with fresh batch and missing files directory
         print("Deleting existing batch dir and missing files dir")
