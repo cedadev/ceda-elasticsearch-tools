@@ -249,10 +249,20 @@ class DepositLog(object):
             readme00 = re.compile("^\d{4}[-](\d{2})[-]\d{2}.*00README:")
 
             for line in reader:
+                # Split line into its components.
+                # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:DEPOSIT:1388172: (force=None) /datacentre/arrivals/users/dartmetoffice/ukmo-msg/EWXT11_201708190300.png
+
+                split_line = line.strip().split(":")
+
+                date_hour = split_line[0]
+                min = split_line[1]
+                sec = split_line[2]
+                filepath = split_line[3]
+                action = split_line[4]
+                filesize = split_line[5]
+                message = ":".join(split_line[6:])
+
                 if deposit.match(line):
-                    # Split line into its components.
-                    # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:DEPOSIT:1388172: (force=None) /datacentre/arrivals/users/dartmetoffice/ukmo-msg/EWXT11_201708190300.png
-                    date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.deposit_list.append(filepath)
 
                     # Add to readme list if the deposited file is a 00README
@@ -260,24 +270,15 @@ class DepositLog(object):
                         self.readme00_list.append(filepath)
 
                 elif deletion.match(line):
-                    # Split line into its components.
-                    # e.g line: 2017-08-20 03:05:03:/badc/msg/data/hritimages/EWXT11/2017/08/19/EWXT11_201708190300.png:REMOVE:0:
-                    date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.deletion_list.append(filepath)
 
                 elif mkdir.match(line):
-                    # Split line into its components.
-                    date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.mkdir_list.append(filepath)
 
                 elif rmdir.match(line):
-                    # Split line into its components.
-                    date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.rmdir_list.append(filepath)
 
                 elif symlink.match(line):
-                    # Split line into its components.
-                    date_hour, min, sec, filepath, action, filesize, message = line.strip().split(":")
                     self.symlink_list.append(filepath)
 
     def __iter__(self):
