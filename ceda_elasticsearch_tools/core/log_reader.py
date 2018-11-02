@@ -81,13 +81,15 @@ class SpotMapping(object):
         :return: Returns the spot which encompasses that file or directory.
         """
 
-        while (key not in self.path2spotmapping) and (key != '/'):
-            key = os.path.dirname(key)
+        archive_path = self.get_archive_path(key)
 
-        if key == '/':
+        while (archive_path not in self.path2spotmapping) and (archive_path != '/'):
+            archive_path = os.path.dirname(archive_path)
+
+        if archive_path == '/':
             return None
 
-        return self.path2spotmapping[key]
+        return self.path2spotmapping[archive_path]
 
     def get_spot_from_storage_path(self, path):
         """
