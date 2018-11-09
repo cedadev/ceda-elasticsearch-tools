@@ -5,6 +5,7 @@ from tqdm import tqdm
 import os
 import requests
 from time import sleep
+import sys
 
 class IndexUpdaterBase():
     """
@@ -91,7 +92,7 @@ class IndexUpdaterBase():
         """
 
         response_list = []
-        for action in tqdm(action_list, desc="Processing queries"):
+        for action in tqdm(action_list, desc="Processing queries", file=sys.stdout):
 
             if api == "bulk":
                 response = self.es.bulk(index=self.index, body=action)
