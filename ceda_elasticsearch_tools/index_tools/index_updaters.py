@@ -12,7 +12,7 @@ class IndexUpdaterBase():
     Base class for index updaters. Contains common methods.
     """
 
-    def __init__(self, index, host, port):
+    def __init__(self, index, host_url, **kwargs):
         """
         Common variables.
         :param index:   Index to update
@@ -20,7 +20,7 @@ class IndexUpdaterBase():
         :param port:    Elasticsearch cluster port
         """
         self.index = index
-        self.es = Elasticsearch(hosts=[{"host": host, "port": port}])
+        self.es = Elasticsearch(hosts=[host_url], **kwargs)
 
     def _get_action_key(self, es_response_item):
         """
