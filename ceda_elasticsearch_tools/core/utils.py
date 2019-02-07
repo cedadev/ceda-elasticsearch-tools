@@ -65,7 +65,7 @@ def get_latest_log(dir, prefix, rank=-1):
         # Check to make sure the rank is in acceptable range
         if abs(rank) > len(filtered_logs):
             # When rank is outside the range of the log list, return the last possible value.
-            rank = math.copysign(len(filtered_logs), rank)
+            rank = int(math.copysign(len(filtered_logs), rank))
 
         # Find the log with correct rank
         latest = sorted([log for log in filtered_logs if log.startswith(stream)])[rank]

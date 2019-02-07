@@ -1,7 +1,7 @@
 certifi
 chardet
 docopt
-elasticsearch=6.3.1
+elasticsearch
 idna
 requests
 urllib3

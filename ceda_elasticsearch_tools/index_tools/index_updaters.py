@@ -7,7 +7,8 @@ import requests
 from time import sleep
 import sys
 
-class IndexUpdaterBase():
+
+class IndexUpdaterBase(object):
     """
     Base class for index updaters. Contains common methods.
     """
@@ -215,6 +216,9 @@ class IndexUpdaterBase():
         else:
             raise ValueError("Invalid api selected. Must be of either bulk|msearch")
 
+    def _create_id(self, string):
+        return hashlib.sha1(string).hexdigest()
+
 
 class CedaDirs(IndexUpdaterBase):
     """
@@ -223,6 +227,10 @@ class CedaDirs(IndexUpdaterBase):
     """
 
     moles_metadata_mapping = {}
+    type = "dir"
+
+    def __init__(self, host_url, index="ceda-dirs", **kwargs):
+        super(CedaDirs, self).__init__(index, host_url, **kwargs)
 
     def _get_moles_metadata(self, path):
         """
@@ -311,7 +319,7 @@ class CedaDirs(IndexUpdaterBase):
 
         meta_list = self._backfill_moles_meta(recursion_list)
 
-        bulk_operations = self._generate_bulk_operation_body(meta_list, type="dir", action="update")
+        bulk_operations = self._generate_bulk_operation_body(meta_list, type=self.type, action="update")
 
         self._bulk_action(bulk_operations)
 
@@ -434,7 +442,7 @@ class CedaDirs(IndexUpdaterBase):
         # Back fill after change
         meta_list = self._backfill_moles_meta(backfill_list)
 
-        bulk_operations = self._generate_bulk_operation_body(meta_list, type="dir", action="update")
+        bulk_operations = self._generate_bulk_operation_body(meta_list, type=self.type, action="update")
 
         self._bulk_action(bulk_operations)
 
@@ -490,7 +498,7 @@ class CedaDirs(IndexUpdaterBase):
 
         meta_list = self._backfill_moles_meta(paths)
 
-        bulk_operations = self._generate_bulk_operation_body(meta_list, type="dir", action="update")
+        bulk_operations = self._generate_bulk_operation_body(meta_list, type=self.type, action="update")
 
         self._bulk_action(bulk_operations)
 
@@ -524,7 +532,7 @@ class CedaDirs(IndexUpdaterBase):
         """
 
         # Generate action list
-        update_list = self._generate_bulk_operation_body(readme_content, type="dir", action="update")
+        update_list = self._generate_bulk_operation_body(readme_content, type=self.type, action="update")
 
         # Perform bulk action
         return self._bulk_action(update_list)
@@ -540,7 +548,7 @@ class CedaDirs(IndexUpdaterBase):
         """
 
         # Generate action list
-        bulk_operations = self._generate_bulk_operation_body(directories, type="dir")
+        bulk_operations = self._generate_bulk_operation_body(directories, type=self.type)
 
         # Perform bulk action
         return self._bulk_action(bulk_operations)
@@ -556,7 +564,7 @@ class CedaDirs(IndexUpdaterBase):
         """
 
         # Generate action list
-        bulk_operations = self._generate_bulk_operation_body(directories, type="dir", action='delete')
+        bulk_operations = self._generate_bulk_operation_body(directories, type=self.type, action='delete')
 
         # Perform bulk action
         return self._bulk_action(bulk_operations)
@@ -566,6 +574,11 @@ class CedaFbi(IndexUpdaterBase):
     """
     Class to aide in updating and managing the ceda-fbi index.
     """
+
+    type = "file"
+
+    def __init__(self, host_url, index="ceda-fbi", **kwargs):
+        super(CedaFbi, self).__init__(index, host_url, **kwargs)
 
     def add_files(self):
         pass
@@ -578,7 +591,7 @@ class CedaFbi(IndexUpdaterBase):
         """
 
         # Generate action list
-        bulk_operations = self._generate_bulk_operation_body(files, type="file", action='delete')
+        bulk_operations = self._generate_bulk_operation_body(files, type=self.type, action='delete')
 
         # Perform bulk action
         return self._bulk_action(bulk_operations)
@@ -634,7 +647,7 @@ class CedaFbi(IndexUpdaterBase):
                 }
             )
 
-        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, type="file", action="search")
+        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, type=self.type, action="search")
 
         return self._bulk_action(bulk_operations, api="msearch", process_results=False)
 
@@ -663,6 +676,52 @@ class CedaFbi(IndexUpdaterBase):
                 }
             )
 
-        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, type="file", action="search")
+        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, type=self.type, action="search")
 
         return self._bulk_action(bulk_operations, api="msearch")
+
+    def update_file_location(self, file_list, on_disk=True):
+        """
+        Update location of file on_disk or on_tape
+        :param file_list: List of files to change
+        :param on_disk: Boolean, status. True will set location to on_disk False, on_tape
+        :return:
+        """
+
+        # set the location value
+        location = "on_disk" if on_disk else "on_tape"
+
+        # Generator to create request information
+        bulk_request_data = (
+            {
+                "id": self._create_id(file),
+                "document": {"info": {"location": location}}
+            } for file in file_list
+        )
+
+        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, type=self.type, action="update")
+
+        return self._bulk_action(bulk_operations)
+
+
+class CedaEo(IndexUpdaterBase):
+    type = "geo_metadata"
+
+    def __init__(self, host_url, index="ceda-eo", **kwargs):
+        super(CedaEo, self).__init__(index, host_url, **kwargs)
+
+    def update_file_location(self, file_list, on_disk=True):
+        # set the location value
+        location = "on_disk" if on_disk else "on_tape"
+
+        # Generator to create request information
+        bulk_request_data = (
+            {
+                "id": self._create_id(file),
+                "document": {"file": {"location": location}}
+            } for file in file_list
+        )
+
+        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, type=self.type, action="update")
+
+        return self._bulk_action(bulk_operations)
