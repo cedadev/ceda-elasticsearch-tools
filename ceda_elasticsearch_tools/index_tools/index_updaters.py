@@ -580,8 +580,13 @@ class CedaFbi(IndexUpdaterBase):
     def __init__(self, host_url, index="ceda-fbi", **kwargs):
         super(CedaFbi, self).__init__(index, host_url, **kwargs)
 
-    def add_files(self):
-        pass
+    def add_files(self, files):
+
+        # Generate action list
+        bulk_operations = self._generate_bulk_operation_body(files, type=self.type)
+
+        # Perform bulk action
+        return self._bulk_action(bulk_operations)
 
     def delete_files(self, files):
         """
