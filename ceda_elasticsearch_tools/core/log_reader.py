@@ -22,7 +22,7 @@ class SpotMapping(object):
     # Remove logging message when running script
     logging.getLogger("requests").setLevel(logging.WARNING)
 
-    def __init__(self, test=False, spot_file=None):
+    def __init__(self, test=False, spot_file=None, sep='='):
 
         if test:
             self.spot2pathmapping['spot-1400-accacia'] = "/badc/accacia"
@@ -32,7 +32,7 @@ class SpotMapping(object):
             with open(spot_file) as reader:
                 spot_mapping = reader.readlines()
 
-            self._build_mapping(spot_mapping, sep='=')
+            self._build_mapping(spot_mapping, sep=sep)
 
         else:
             response = requests.get(self.url)

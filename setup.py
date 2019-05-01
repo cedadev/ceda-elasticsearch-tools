@@ -24,7 +24,7 @@ setup(
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
 
-    version='0.4.1',
+    version='0.4.2',
 
     description='Extension of the basic elasticsearch python wrapper to perform operations with a given ES index.',
     long_description=long_description,
@@ -45,7 +45,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 5 - Beta',
+        'Development Status :: 5 - Production',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
