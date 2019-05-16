@@ -118,7 +118,8 @@ class SpotMapping(object):
         try:
             archive_path = os.path.join(spot_path, suffix)
 
-        except AttributeError:
+        # Joining None produces an AttributeError in py2 and a TypeError py3
+        except (AttributeError, TypeError):
             archive_path = spot_path
 
         return archive_path
