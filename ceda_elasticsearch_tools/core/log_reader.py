@@ -35,17 +35,23 @@ class SpotMapping(object):
             self._build_mapping(spot_mapping, sep=sep)
 
         else:
-            response = requests.get(self.url)
-            spot_mapping = response.text.split('\n')
-
-            self._build_mapping(spot_mapping)
-
+            self._download_mapping()
 
     def __iter__(self):
         return iter(self.spot2pathmapping)
 
     def __len__(self):
         return len(self.spot2pathmapping)
+
+    def _download_mapping(self):
+        """
+        Download the mapping from the cedaarchiveapp and build mappings.
+        """
+
+        response = requests.get(self.url)
+        spot_mapping = response.text.split('\n')
+
+        self._build_mapping(spot_mapping)
 
     def _build_mapping(self, spot_mapping, sep=None):
         """
@@ -68,7 +74,18 @@ class SpotMapping(object):
         :param key: Provide the spot
         :return: Returns the directory mapped to that spot
         """
-        return self.spot2pathmapping[key]
+
+        # Get the path to the spot
+        archive_root = self.spot2pathmapping.get(key)
+
+        # If key not found, refresh the mapping and try again
+        # If still not found, this will return None
+        if archive_root is None:
+            self._download_mapping()
+
+            archive_root = self.spot2pathmapping.get(key)
+
+        return archive_root
 
     def get_spot(self, key):
         """
