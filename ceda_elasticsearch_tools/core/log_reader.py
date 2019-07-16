@@ -103,7 +103,7 @@ class SpotMapping(object):
         while (archive_path not in self.path2spotmapping) and (archive_path != '/'):
             archive_path = os.path.dirname(archive_path)
 
-        if archive_path == '/':
+        if archive_path == '/' or archive_path is None:
             return None
 
         return self.path2spotmapping[archive_path]
@@ -115,13 +115,17 @@ class SpotMapping(object):
         :param path: Path to test
         :return: spot name and path suffix
         """
-        storage_suffix = path.split('archive/')[1]
-        spot = storage_suffix.split('/')[0]
+
+        # Setup output
+        spot, suffix = None, None
+
         try:
+            storage_suffix = path.split('archive/')[1]
+            spot = storage_suffix.split('/')[0]
             suffix = storage_suffix.split(spot + '/')[1]
 
         except IndexError:
-            suffix = None
+            logging.error("Error getting spot from: {}".format(path))
 
         return spot, suffix
 
