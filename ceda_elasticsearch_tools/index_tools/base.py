@@ -133,7 +133,7 @@ class IndexUpdaterBase(object):
 
             elif action == "update":
                 header = json.dumps({"update": {"_index": self.index, "_type": type, "_id": id}}) + "\n"
-                body = json.dumps({"doc": item["document"]}) + "\n"
+                body = json.dumps({"doc": item["document"], "doc_as_upsert": True}) + "\n"
 
             elif action == "delete":
                 header = json.dumps({"delete": {"_index": self.index, "_type": type, "_id": id}}) + "\n"

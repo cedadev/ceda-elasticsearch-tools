@@ -25,7 +25,7 @@ class CedaFbi(IndexUpdaterBase):
     def add_files(self, files):
 
         # Generate action list
-        bulk_operations = self._generate_bulk_operation_body(files, type=self.type)
+        bulk_operations = self._generate_bulk_operation_body(files, type=self.type, action='update')
 
         # Perform bulk action
         return self._bulk_action(bulk_operations)
