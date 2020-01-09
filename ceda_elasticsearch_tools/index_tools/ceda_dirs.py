@@ -23,8 +23,8 @@ class CedaDirs(IndexUpdaterBase):
     moles_metadata_mapping = {}
     type = "dir"
 
-    def __init__(self, host_url, index="ceda-dirs", **kwargs):
-        super(CedaDirs, self).__init__(index, host_url, **kwargs)
+    def __init__(self, host_urls, index="ceda-dirs", **kwargs):
+        super(CedaDirs, self).__init__(index, host_urls, **kwargs)
 
     def _get_moles_metadata(self, path):
         """

@@ -24,7 +24,7 @@ setup(
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
 
-    version='1.2.0',
+    version='2.0.0',
 
     description='Extension of the basic elasticsearch python wrapper to perform operations with a given ES index.',
     long_description=long_description,

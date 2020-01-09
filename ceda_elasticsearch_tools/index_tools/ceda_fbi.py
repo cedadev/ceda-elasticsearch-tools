@@ -19,8 +19,8 @@ class CedaFbi(IndexUpdaterBase):
 
     type = "file"
 
-    def __init__(self, host_url, index="ceda-fbi", **kwargs):
-        super(CedaFbi, self).__init__(index, host_url, **kwargs)
+    def __init__(self, host_urls, index="ceda-fbi", **kwargs):
+        super(CedaFbi, self).__init__(index, host_urls, **kwargs)
 
     def add_files(self, files):
 
