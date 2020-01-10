@@ -29,6 +29,6 @@ class CedaEo(IndexUpdaterBase):
             } for file in file_list
         )
 
-        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, type=self.type, action="update")
+        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, action="update")
 
         return self._bulk_action(bulk_operations)

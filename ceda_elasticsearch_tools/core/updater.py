@@ -248,46 +248,8 @@ class ElasticsearchUpdater(object):
 
         return query_list
 
-    # def gen_bulk_update_json(self, querytemp, paramfunc, input_list, blocksize):
-    #     """
-    #     Takes a list and creates an Elasticsearch bulk update query with the desired blocksize.
-    #     The query is passed in using querytemp and the paramfunc defines the parameters which
-    #     will be rendered to produce the final query.
-    #
-    #     :param querytemp: Template query JSON
-    #     :param paramfunc: Function which returns the parameters needed in the querytemp. eg.
-    #
-    #                       def params(item)
-    #                             return {"dirname": os.path.dirname(item), "filename":os.path.filename(item)}
-    #
-    #                       This should be passed in without brackets.
-    #     :param input_list: List to turn into a query.
-    #     :param blocksize: Number of files to include in each msearch query.
-    #
-    #     :return: List with each element containing a JSON bulk query which has been chopped so that the number of
-    #              objects in the query matches blocksize.
-    #     """
-    #     bulk_json = ""
-    #     query_list = []
-    #
-    #     for i, item in enumerate(input_list, 1):
-    #         params = paramfunc(item)
-    #
-    #         index = json.dumps({"update": {"type"}}) + "\n"
-    #         search_query = self._render_query(querytemp, params) + "\n"
-    #
-    #         msearch_json += index + search_query
-    #
-    #         if i % blocksize == 0:
-    #             query_list.append(msearch_json)
-    #             msearch_json = ""
-    #
-    #     if msearch_json:
-    #         query_list.append(msearch_json)
-    #
-    #     return query_list
-
-    def _render_query(self, query, parameters):
+    @staticmethod
+    def _render_query(query, parameters):
         """
         Renders parameters into JSON for elasticsearch query.
         Templated variables are in the format <var1>
@@ -373,7 +335,7 @@ class ElasticsearchUpdater(object):
 
         # Only update those files which are contained in the target index.
         files_to_update = index_test["True"]
-        print "Files to update: {}".format(len(index_test["True"]))
+        print ("Files to update: {}".format(len(index_test["True"])))
 
         if len(files_to_update) == 0:
             return "No files to update"
