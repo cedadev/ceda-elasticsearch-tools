@@ -73,7 +73,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         'requests',
-        'elasticsearch>=7.0.0',
+        'elasticsearch==7.1.0',
         'docopt'
     ],
 
