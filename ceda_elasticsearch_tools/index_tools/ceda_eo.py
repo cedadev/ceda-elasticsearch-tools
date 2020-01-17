@@ -14,8 +14,8 @@ from ceda_elasticsearch_tools.index_tools.base import IndexUpdaterBase
 class CedaEo(IndexUpdaterBase):
     type = "geo_metadata"
 
-    def __init__(self, host_url, index="ceda-eo", **kwargs):
-        super(CedaEo, self).__init__(index, host_url, **kwargs)
+    def __init__(self, host_urls, index="ceda-eo", **kwargs):
+        super(CedaEo, self).__init__(index, host_urls, **kwargs)
 
     def update_file_location(self, file_list, on_disk=True):
         # set the location value
@@ -29,6 +29,6 @@ class CedaEo(IndexUpdaterBase):
             } for file in file_list
         )
 
-        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, type=self.type, action="update")
+        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, action="update")
 
         return self._bulk_action(bulk_operations)
