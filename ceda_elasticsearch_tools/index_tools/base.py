@@ -16,6 +16,8 @@ from tqdm import tqdm
 import sys
 import os
 from elasticsearch.helpers import scan
+from ceda_elasticsearch_tools.elasticsearch import CEDAElasticsearchClient
+
 
 class IndexUpdaterBase(object):
     """
@@ -36,10 +38,8 @@ class IndexUpdaterBase(object):
         )
 
         self.index = index
-        self.es = Elasticsearch(
+        self.es = CEDAElasticsearchClient(
             hosts=host_urls,
-            use_ssl=True,
-            ca_certs=ca_root,
             **kwargs
         )
 
