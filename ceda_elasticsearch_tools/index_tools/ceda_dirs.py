@@ -23,8 +23,8 @@ class CedaDirs(IndexUpdaterBase):
     moles_metadata_mapping = {}
     type = "dir"
 
-    def __init__(self, host_url, index="ceda-dirs", **kwargs):
-        super(CedaDirs, self).__init__(index, host_url, **kwargs)
+    def __init__(self, host_urls, index="ceda-dirs", **kwargs):
+        super(CedaDirs, self).__init__(index, host_urls, **kwargs)
 
     def _get_moles_metadata(self, path):
         """
@@ -113,7 +113,7 @@ class CedaDirs(IndexUpdaterBase):
 
         meta_list = self._backfill_moles_meta(recursion_list)
 
-        bulk_operations = self._generate_bulk_operation_body(meta_list, type=self.type, action="update")
+        bulk_operations = self._generate_bulk_operation_body(meta_list, action="update")
 
         self._bulk_action(bulk_operations)
 
@@ -236,7 +236,7 @@ class CedaDirs(IndexUpdaterBase):
         # Back fill after change
         meta_list = self._backfill_moles_meta(backfill_list)
 
-        bulk_operations = self._generate_bulk_operation_body(meta_list, type=self.type, action="update")
+        bulk_operations = self._generate_bulk_operation_body(meta_list, action="update")
 
         self._bulk_action(bulk_operations)
 
@@ -292,7 +292,7 @@ class CedaDirs(IndexUpdaterBase):
 
         meta_list = self._backfill_moles_meta(paths)
 
-        bulk_operations = self._generate_bulk_operation_body(meta_list, type=self.type, action="update")
+        bulk_operations = self._generate_bulk_operation_body(meta_list, action="update")
 
         self._bulk_action(bulk_operations)
 
@@ -326,7 +326,7 @@ class CedaDirs(IndexUpdaterBase):
         """
 
         # Generate action list
-        update_list = self._generate_bulk_operation_body(readme_content, type=self.type, action="update")
+        update_list = self._generate_bulk_operation_body(readme_content, action="update")
 
         # Perform bulk action
         return self._bulk_action(update_list)
@@ -342,7 +342,7 @@ class CedaDirs(IndexUpdaterBase):
         """
 
         # Generate action list
-        bulk_operations = self._generate_bulk_operation_body(directories, type=self.type)
+        bulk_operations = self._generate_bulk_operation_body(directories)
 
         # Perform bulk action
         return self._bulk_action(bulk_operations)
@@ -358,7 +358,29 @@ class CedaDirs(IndexUpdaterBase):
         """
 
         # Generate action list
-        bulk_operations = self._generate_bulk_operation_body(directories, type=self.type, action='delete')
+        bulk_operations = self._generate_bulk_operation_body(directories, action='delete')
 
         # Perform bulk action
         return self._bulk_action(bulk_operations)
+
+    def add_dir(self, id, doc):
+        """
+        Add a single document
+        :param id: sha1 hash of filepath
+        :param doc: Document to be upserted
+        """
+
+        document = {
+            'doc': doc,
+            'doc_as_upsert': True
+        }
+
+        self.es.update(index=self.index, id=id, body=document)
+
+    def delete_dir(self, id):
+        """
+        Delete a single document
+        :param id: sha1 hash of filepath
+        """
+
+        self.es.delete(index=self.index, id=id)

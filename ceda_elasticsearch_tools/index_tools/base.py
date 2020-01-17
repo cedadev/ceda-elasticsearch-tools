@@ -14,23 +14,37 @@ import json
 import hashlib
 from tqdm import tqdm
 import sys
+import os
+from elasticsearch.helpers import scan
+from ceda_elasticsearch_tools.elasticsearch import CEDAElasticsearchClient
+
 
 class IndexUpdaterBase(object):
     """
     Base class for index updaters. Contains common methods.
     """
 
-    def __init__(self, index, host_url, **kwargs):
+    def __init__(self, index, host_urls, **kwargs):
         """
         Common variables.
         :param index:   Index to update
         :param host:    Elasticsearch cluster master host
         :param port:    Elasticsearch cluster port
         """
-        self.index = index
-        self.es = Elasticsearch(hosts=[host_url], **kwargs)
 
-    def _get_action_key(self, es_response_item):
+        ca_root = os.path.abspath(
+            os.path.join(
+                os.path.dirname(__file__), '../root_certificate/root-ca.pem')
+        )
+
+        self.index = index
+        self.es = CEDAElasticsearchClient(
+            hosts=host_urls,
+            **kwargs
+        )
+
+    @staticmethod
+    def _get_action_key(es_response_item):
         """
         Get the action key for processing the response
         :param es_response_item:
@@ -48,40 +62,10 @@ class IndexUpdaterBase(object):
 
         :param query:   The query to perform
         :param size:    Size to return in each scroll. (default: 1000)
-        :return:        List of results
+        :return:        Generator of results
         """
 
-        all_results = []
-
-        # Get first search
-        page = self.es.search(
-            index=self.index,
-            scroll='1m',
-            size=1000,
-            body=query)
-
-        sid = page['_scroll_id']
-        total_results = page['hits']['total']
-        all_results.extend(page['hits']['hits'])
-
-        # Floor division
-        scroll_count = total_results // size
-
-        # Start scrolling
-        for i in range(scroll_count):
-            page = self.es.scroll(scroll_id=sid, scroll='1m')
-
-            # Update the scroll ID
-            sid = page['_scroll_id']
-
-            # Add results to main results list
-            hits = page['hits']['hits']
-            all_results.extend(hits)
-
-        # Clear the scroll context to free memory
-        self.es.clear_scroll(scroll_id=sid)
-
-        return all_results
+        return scan(self.es, query=query, scroll='1m', index=self.index, size=size)
 
     def _bulk_action(self, action_list, api="bulk", process_results=True):
         """
@@ -113,7 +97,7 @@ class IndexUpdaterBase(object):
 
         return self._process_bulk_action_response(response_list, api, process=process_results)
 
-    def _generate_bulk_operation_body(self, content_list, type, action="index"):
+    def _generate_bulk_operation_body(self, content_list, action="index"):
         """
         Generate the query body for the bulk operation
 
@@ -128,15 +112,15 @@ class IndexUpdaterBase(object):
             id = item["id"]
 
             if action == "index":
-                header = json.dumps({"index": {"_index": self.index, "_type": type, "_id": id}}) + "\n"
+                header = json.dumps({"index": {"_index": self.index, "_id": id}}) + "\n"
                 body = json.dumps(item["document"]) + "\n"
 
             elif action == "update":
-                header = json.dumps({"update": {"_index": self.index, "_type": type, "_id": id}}) + "\n"
+                header = json.dumps({"update": {"_index": self.index, "_id": id}}) + "\n"
                 body = json.dumps({"doc": item["document"], "doc_as_upsert": True}) + "\n"
 
             elif action == "delete":
-                header = json.dumps({"delete": {"_index": self.index, "_type": type, "_id": id}}) + "\n"
+                header = json.dumps({"delete": {"_index": self.index, "_id": id}}) + "\n"
                 body = ""
 
             elif action == "search":
