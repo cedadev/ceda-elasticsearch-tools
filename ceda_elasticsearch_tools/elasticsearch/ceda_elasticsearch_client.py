@@ -18,11 +18,10 @@ class CEDAElasticsearchClient(Elasticsearch):
     certificate for the cluster
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """
         Return elasticsearch client object but always use SSL and
         provide the cluster root certificate
-        :param args:
         :param kwargs:
         """
 
@@ -31,4 +30,10 @@ class CEDAElasticsearchClient(Elasticsearch):
                 os.path.dirname(__file__), '../root_certificate/root-ca.pem')
         )
 
-        super().__init__(*args, use_ssl=True, ca_certs=ca_root, **kwargs)
+        super().__init__(
+            [f'es{i}.ceda.ac.uk' for i in range(9,17)],
+            use_ssl=True,
+            ca_certs=ca_root,
+            port=9200,
+            **kwargs
+        )
