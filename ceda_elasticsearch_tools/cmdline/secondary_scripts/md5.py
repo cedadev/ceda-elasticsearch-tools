@@ -143,7 +143,7 @@ def main():
                 if md5_json:
                     update.make_bulk_update(md5_json)
 
-            except Exception, msg:
+            except Exception as msg:
                 logger.error(msg)
 
 

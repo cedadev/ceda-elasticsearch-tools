@@ -88,12 +88,8 @@ def update_from_logs(arguments, index, log_dir):
         for spot in spots:
             # Only run files not found in the list of completed spots
             if spot not in completed_spots:
-                subprocess.call('md5.py -i {index} -o {log_dir} -s {spot} -a {archive_root}'.format(
-                    spot=spot,
-                    archive_root=spots.get_archive_root(spot),
-                    index=index,
-                    log_dir=log_dir),
-                    shell=True)
+                subprocess.call(f'md5.py -i {index} -o {log_dir} -s {spot} -a {spots.get_archive_root(spot)}',
+                                shell=True)
 
                 # Add completed spot to the completed spot file
                 comp_spot_output.write("{}\n".format(spot))
@@ -230,12 +226,12 @@ def calculate_md5s(arguments):
     # If flag is not in command line arguments write records to disk. This is here so that if the script needs to be
     # restarted, you can skip the elasticsearch query phase.
     if arguments["--no-create-files"] == False:
-        print "Downloading records missing MD5s"
+        print ("Downloading records missing MD5s")
         # Download ES id and filepath to local file.
         download_files_missing_md5(index, host, port, document_output)
 
     # Submit those files as jobs to lotus
-    print "Submit jobs to lotus"
+    print ("Submit jobs to lotus")
     for file in os.listdir(document_output):
         command = 'md5.py -i {index} -o {log_dir} --pagefile {page}'.format(
             index=index,
@@ -269,10 +265,10 @@ def main():
     begin = datetime.now()
 
     if arguments["-c"] or arguments["--calculate"]:
-        print "Updating MD5s by calculation"
+        print ("Updating MD5s by calculation")
         calculate_md5s(arguments)
     else:
-        print "Updating MD5 from spot logs"
+        print ("Updating MD5 from spot logs")
         update_from_logs(arguments, index, log_dir)
 
     logger.info("Whole operation took: %s" % (datetime.now() - begin))

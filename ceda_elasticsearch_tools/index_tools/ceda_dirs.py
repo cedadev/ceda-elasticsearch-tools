@@ -14,6 +14,7 @@ import os
 import requests
 from time import sleep
 
+
 class CedaDirs(IndexUpdaterBase):
     """
     Class to aide in updating and managing the ceda-dirs index. Includes hooks to allow MOLES
@@ -23,8 +24,8 @@ class CedaDirs(IndexUpdaterBase):
     moles_metadata_mapping = {}
     type = "dir"
 
-    def __init__(self, host_urls, index="ceda-dirs", **kwargs):
-        super(CedaDirs, self).__init__(index, host_urls, **kwargs)
+    def __init__(self, index="ceda-dirs", **kwargs):
+        super().__init__(index, **kwargs)
 
     def _get_moles_metadata(self, path):
         """
@@ -46,10 +47,9 @@ class CedaDirs(IndexUpdaterBase):
         #         dir = os.path.dirname(dir)
 
         # If no match found check MOLES API for metadata
-        url = "http://catalogue-test.ceda.ac.uk/api/v0/obs/get_info"
+        url = "http://api.catalogue.ceda.ac.uk/api/v0/obs/get_info"
 
         r = requests.get(url + path)
-        # print (r.text)
         r_json = r.json()
 
         # If there is a response from the API add that to the dict to reduce calls in the future

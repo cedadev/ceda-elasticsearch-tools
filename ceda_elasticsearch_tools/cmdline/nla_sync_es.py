@@ -26,7 +26,6 @@ Options:
 '''
 from docopt import docopt
 
-from ceda_elasticsearch_tools.core.updater import ElasticsearchUpdater, ElasticsearchQuery
 import requests
 import pkg_resources
 from time import sleep
@@ -38,23 +37,25 @@ from itertools import islice
 import simplejson as json
 import subprocess
 
+
 def loading(message):
     """
     Creates spinning loading bar
     :param message: Message to display followed by spinning bar
     """
     for i in itertools.cycle(['|', '/', '-', '\\', '|', '/', '-', '\\']):
-        text = message + ": {}".format(i)
+        text = message + f": {i}"
         sys.stdout.write(text)
         sys.stdout.flush()
         sys.stdout.write('\r')
         sleep(0.1)
 
+
 def create_output_dir(output_dir, batch_dir):
     """
     Makes sure that the output directories are in place and clean, ready for the sync
     """
-    print("Creating output dir: {}".format(output_dir))
+    print(f"Creating output dir: {output_dir}")
     if os.path.isdir(output_dir):
         # Make sure to always start with fresh batch and missing files directory
         print("Deleting existing batch dir and missing files dir")
@@ -101,6 +102,7 @@ def download_data_from_nla(url):
 
     return files_t, files_d
 
+
 def chunks(l, n):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(l), n):
@@ -110,7 +112,7 @@ def chunks(l, n):
 def chunk_dict(d, n):
     '''Yield n-sized chuncks from d'''
     it = iter(d)
-    for i in xrange(0, len(d), n):
+    for i in range(0, len(d), n):
         yield {k:d[k] for k in islice(it, n)}
 
 
@@ -188,7 +190,7 @@ def main():
                 index=index, input_file=os.path.join(BATCH_DIR,"on_disk", file), output_dir=OUTPUT_DIR
             )
 
-        print cmd
+        print(cmd)
         subprocess.call("bsub -q short-serial -W 24:00 {}".format(cmd),shell=True)
 
 if __name__ == "__main__":

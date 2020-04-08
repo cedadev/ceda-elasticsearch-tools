@@ -9,7 +9,6 @@ __license__ = 'BSD - see LICENSE file in top-level package directory'
 __contact__ = 'richard.d.smith@stfc.ac.uk'
 
 
-from elasticsearch import Elasticsearch
 import json
 import hashlib
 from tqdm import tqdm
@@ -24,12 +23,10 @@ class IndexUpdaterBase(object):
     Base class for index updaters. Contains common methods.
     """
 
-    def __init__(self, index, host_urls, **kwargs):
+    def __init__(self, index, **kwargs):
         """
         Common variables.
         :param index:   Index to update
-        :param host:    Elasticsearch cluster master host
-        :param port:    Elasticsearch cluster port
         """
 
         ca_root = os.path.abspath(
@@ -38,10 +35,7 @@ class IndexUpdaterBase(object):
         )
 
         self.index = index
-        self.es = CEDAElasticsearchClient(
-            hosts=host_urls,
-            **kwargs
-        )
+        self.es = CEDAElasticsearchClient(**kwargs)
 
     @staticmethod
     def _get_action_key(es_response_item):
