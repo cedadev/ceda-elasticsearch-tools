@@ -35,6 +35,5 @@ class CEDAElasticsearchClient(Elasticsearch):
             use_ssl=True,
             ca_certs=ca_root,
             port=9200,
-            verify_certs=False,
             **kwargs
         )
