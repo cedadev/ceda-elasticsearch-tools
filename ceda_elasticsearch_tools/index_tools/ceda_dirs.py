@@ -365,17 +365,12 @@ class CedaDirs(IndexUpdaterBase):
 
     def add_dir(self, id, doc):
         """
-        Add a single document
-        :param id: sha1 hash of filepath
-        :param doc: Document to be upserted
+        Convenience method to upsert a single document
+        :param id: Document ID (string)
+        :param doc: The document to upload (dict)
         """
 
-        document = {
-            'doc': doc,
-            'doc_as_upsert': True
-        }
-
-        self.es.update(index=self.index, id=id, body=document)
+        self._add_item(id, doc)
 
     def delete_dir(self, id):
         """

@@ -203,3 +203,16 @@ class IndexUpdaterBase(object):
 
     def _create_id(self, string):
         return hashlib.sha1(string).hexdigest()
+
+    def _add_item(self, id, doc):
+        """
+        Update a single document
+        :param id: Dictionary containing document body and id in form
+        {'document':{},'id':<sha1 hash of filepath>}
+        """
+        document = {
+            'doc': doc,
+            'doc_as_upsert': True
+        }
+
+        self.es.update(index=self.index, id=id, body=document)

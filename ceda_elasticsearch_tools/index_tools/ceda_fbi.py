@@ -24,16 +24,13 @@ class CedaFbi(IndexUpdaterBase):
 
     def add_file(self, id, doc):
         """
-        Update a single document
-        :param data: Dictionary containing document body and id in form
-        {'document':{},'id':<sha1 hash of filepath>}
+        Convenience method to upsert a single document
+        :param id: Document ID (string)
+        :param doc: The document to upload (dict)
         """
-        document = {
-            'doc': doc,
-            'doc_as_upsert': True
-        }
 
-        self.es.update(index=self.index, id=id, body=document)
+        self._add_item(id, doc)
+
 
     def delete_file(self, document_id):
         """
