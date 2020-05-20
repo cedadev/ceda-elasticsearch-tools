@@ -192,9 +192,7 @@ class NLASync():
         for action, files in zip(action_list, files_to_index):
             r = self.es.bulk(body=action, request_timeout=120)
             self.process_response_for_errors(r, files)
-        print "Files indexed: {} Database Errors: {} Properties errors: {}".format(self.files_indexed,
-                                                                                   self.database_errors,
-                                                                                   self.files_properties_errors)
+        print(f"Files indexed: {self.files_indexed} Database Errors: {self.database_errors} Properties errors: {self.files_properties_errors}")
 
     def process_response_for_errors(self, response, files):
         """
@@ -239,7 +237,7 @@ def main():
 
     # Update all files matched in the index and return list of files that did not match.
     files_not_in_index, summary = sync.sync_NLA_file_location()
-    print summary
+    print(summary)
 
     # If --index-doc flag set then attempt to clean up the missing files
     if config['--index-docs'] is True:

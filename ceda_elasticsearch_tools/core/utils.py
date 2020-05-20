@@ -4,6 +4,7 @@ import sys
 import os
 import math
 
+
 def get_number_of_submitted_lotus_tasks():
 
     """
@@ -22,10 +23,12 @@ def get_number_of_submitted_lotus_tasks():
 
     return num_of_running_tasks
 
+
 def _make_bsub_command(task):
     "Construct bsub command for task and return it."
     command = "bsub -q par-single -W 48:00 %s" % task
     return command
+
 
 def percent(total, value):
     if total == 0:
@@ -34,6 +37,7 @@ def percent(total, value):
         return 0
     else:
         return round((float(value)/ total) * 100,2)
+
 
 def get_latest_log(dir, prefix, rank=-1):
     """
@@ -73,10 +77,12 @@ def get_latest_log(dir, prefix, rank=-1):
 
     return latest_logs
 
+
 def list2file_newlines(list_obj, filename):
 
     with open(filename, 'w') as writer:
         writer.writelines(map(lambda x: x+"\n", list_obj))
+
 
 class ProgressBar(object):
 

@@ -19,13 +19,35 @@ class CedaFbi(IndexUpdaterBase):
 
     type = "file"
 
-    def __init__(self, host_url, index="ceda-fbi", **kwargs):
-        super(CedaFbi, self).__init__(index, host_url, **kwargs)
+    def __init__(self, index="ceda-fbi", **kwargs):
+        super().__init__(index, **kwargs)
+
+    def add_file(self, id, doc):
+        """
+        Convenience method to upsert a single document
+        :param id: Document ID (string)
+        :param doc: The document to upload (dict)
+        """
+
+        self._add_item(id, doc)
+
+
+    def delete_file(self, document_id):
+        """
+        Delete a single document by ID
+        :param document_id: sha1 hash of the filepath
+        """
+        self.es.delete(index=self.index, id=document_id)
 
     def add_files(self, files):
+        """
+        Add multiple files
+        :param files:
+        :return:
+        """
 
         # Generate action list
-        bulk_operations = self._generate_bulk_operation_body(files, type=self.type, action='update')
+        bulk_operations = self._generate_bulk_operation_body(files, action='update')
 
         # Perform bulk action
         return self._bulk_action(bulk_operations)
@@ -38,7 +60,7 @@ class CedaFbi(IndexUpdaterBase):
         """
 
         # Generate action list
-        bulk_operations = self._generate_bulk_operation_body(files, type=self.type, action='delete')
+        bulk_operations = self._generate_bulk_operation_body(files, action='delete')
 
         # Perform bulk action
         return self._bulk_action(bulk_operations)
@@ -94,7 +116,7 @@ class CedaFbi(IndexUpdaterBase):
                 }
             )
 
-        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, type=self.type, action="search")
+        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, action="search")
 
         return self._bulk_action(bulk_operations, api="msearch", process_results=False)
 
@@ -123,7 +145,7 @@ class CedaFbi(IndexUpdaterBase):
                 }
             )
 
-        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, type=self.type, action="search")
+        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, action="search")
 
         return self._bulk_action(bulk_operations, api="msearch")
 
@@ -146,6 +168,6 @@ class CedaFbi(IndexUpdaterBase):
             } for file in file_list
         )
 
-        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, type=self.type, action="update")
+        bulk_operations = self._generate_bulk_operation_body(bulk_request_data, action="update")
 
         return self._bulk_action(bulk_operations)

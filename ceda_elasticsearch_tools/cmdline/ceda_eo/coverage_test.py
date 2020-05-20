@@ -47,7 +47,7 @@ def main():
     try:
         test_groups = config[namespace]
     except KeyError:
-        print "{} does not exist in config file ceda_elasticsearch_tools/config/config.json".format(namespace)
+        print (f"{namespace} does not exist in config file ceda_elasticsearch_tools/config/config.json")
         exit()
 
 
@@ -69,13 +69,9 @@ def main():
         #     print params(file)
         results = update.check_files_existence(params,query,file_list)
 
-        print "Group: {} Total files: {} Files in: {} Files out: {} Coverage: {}%".format(
-            group,
-            len(file_list),
-            len(results["True"]),
-            len(results["False"]),
-            util.percent(len(file_list),len(results["True"]))
-        )
+        print(f"Group: {group} Total files: {len(file_list)}"
+               f" Files in: {len(results['True'])} Files out: {len(results['False'])}"
+               f" Coverage: {util.percent(len(file_list),len(results['True']))}")
 
 
 

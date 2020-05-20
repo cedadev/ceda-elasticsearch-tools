@@ -1,4 +1,3 @@
-from elasticsearch import Elasticsearch
 import os
 import json
 import re
@@ -6,7 +5,7 @@ import logging
 from log_reader import MD5LogFile
 import utils
 import hashlib
-
+from ceda_elasticsearch_tools.elasticsearch import CEDAElasticsearchClient
 
 class ElasticsearchQuery(object):
     """
@@ -137,7 +136,7 @@ class IndexFilter(object):
         :return: Filtered list
         """
         if index not in self.config:
-            self.logger.error("Requested index: {} not in config file.".format(index))
+            self.logger.error(f"Requested index: {index} not in config file.")
             return None
 
         def root_match(value):
@@ -165,7 +164,7 @@ class ElasticsearchUpdater(object):
         :param port: The read/write elasticsearch port.
         """
 
-        self.es = Elasticsearch(hosts=[{"host": host, "port": port}])
+        self.es = CEDAElasticsearchClient()
         self.index = index
 
     def make_bulk_update(self, bulk_json):
@@ -248,46 +247,8 @@ class ElasticsearchUpdater(object):
 
         return query_list
 
-    # def gen_bulk_update_json(self, querytemp, paramfunc, input_list, blocksize):
-    #     """
-    #     Takes a list and creates an Elasticsearch bulk update query with the desired blocksize.
-    #     The query is passed in using querytemp and the paramfunc defines the parameters which
-    #     will be rendered to produce the final query.
-    #
-    #     :param querytemp: Template query JSON
-    #     :param paramfunc: Function which returns the parameters needed in the querytemp. eg.
-    #
-    #                       def params(item)
-    #                             return {"dirname": os.path.dirname(item), "filename":os.path.filename(item)}
-    #
-    #                       This should be passed in without brackets.
-    #     :param input_list: List to turn into a query.
-    #     :param blocksize: Number of files to include in each msearch query.
-    #
-    #     :return: List with each element containing a JSON bulk query which has been chopped so that the number of
-    #              objects in the query matches blocksize.
-    #     """
-    #     bulk_json = ""
-    #     query_list = []
-    #
-    #     for i, item in enumerate(input_list, 1):
-    #         params = paramfunc(item)
-    #
-    #         index = json.dumps({"update": {"type"}}) + "\n"
-    #         search_query = self._render_query(querytemp, params) + "\n"
-    #
-    #         msearch_json += index + search_query
-    #
-    #         if i % blocksize == 0:
-    #             query_list.append(msearch_json)
-    #             msearch_json = ""
-    #
-    #     if msearch_json:
-    #         query_list.append(msearch_json)
-    #
-    #     return query_list
-
-    def _render_query(self, query, parameters):
+    @staticmethod
+    def _render_query(query, parameters):
         """
         Renders parameters into JSON for elasticsearch query.
         Templated variables are in the format <var1>
@@ -373,7 +334,7 @@ class ElasticsearchUpdater(object):
 
         # Only update those files which are contained in the target index.
         files_to_update = index_test["True"]
-        print "Files to update: {}".format(len(index_test["True"]))
+        print (f"Files to update: {len(index_test['True'])}")
 
         if len(files_to_update) == 0:
             return "No files to update"
@@ -408,14 +369,10 @@ class ElasticsearchUpdater(object):
         # Clean up any remaining updates
         result.append(self.make_bulk_update(update_json))
 
-        summary_string = "Processed {} files. " \
-                         "Updated '{}' index. " \
-                         "Updated {} files. " \
-                         "{} files not in target index".format(len(file_list),
-                                                               self.index,
-                                                               updated_files,
-                                                               len(index_test["False"])
-                                                               )
+        summary_string = f"Processed {len(file_list)} files. " \
+                         "Updated '{self.index}' index. " \
+                         "Updated {updated_files} files. " \
+                         "{len(index_test['False'])} files not in target index"
 
         return index_test["False"], summary_string
 
@@ -427,7 +384,7 @@ class ElasticsearchUpdater(object):
         spotlog = MD5LogFile(spot_name, spot_path)
         file_list = spotlog.as_list()
 
-        logger.debug("Spot: {} contains {} files.".format(spot_path, len(spotlog)))
+        logger.debug(f"Spot: {spot_path} contains {len(spotlog)} files.")
 
         param_func, query_tmpl = ElasticsearchQuery.ceda_fbs()
         result = self.check_files_existence(param_func, query_tmpl, file_list, raw_resp=True, threshold=threshold)
@@ -469,7 +426,7 @@ class ElasticsearchUpdater(object):
             if md5_json:
                 self.make_bulk_update(md5_json)
 
-        except Exception, msg:
+        except Exception as msg:
             logger.error(msg)
 
 

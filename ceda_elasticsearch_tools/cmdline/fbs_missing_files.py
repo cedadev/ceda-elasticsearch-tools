@@ -33,17 +33,14 @@ from docopt import docopt
 from tabulate import tabulate
 import re
 import os
-from ceda_elasticsearch_tools.core import util
+from ceda_elasticsearch_tools.core import utils
 import subprocess
 from ceda_elasticsearch_tools.cmdline import __version__
 from time import sleep
 from tqdm import tqdm
-from datetime import datetime
-
 
 
 SCRIPT_DIR = os.path.realpath(os.path.dirname(__file__))
-
 
 
 def submit_jobs_to_lotus(filelist, config):
@@ -51,14 +48,13 @@ def submit_jobs_to_lotus(filelist, config):
     for file in tqdm(filelist, desc="Submitting to Lotus" ):
         filepath = os.path.join(config["DIR"],file)
 
-        task = "python {}/spot_checker.py -f {} -o  {} -i {}".format(
-            SCRIPT_DIR, filepath, config["OUTPUT"], config["INDEX"])
+        task = f"python {SCRIPT_DIR}/spot_checker.py -f {filepath} -o  {config['OUTPUT']} -i {config['INDEX']}"
 
         if config["HOSTNAME"]:
-            task += " -h {}".format(config["HOSTNAME"])
+            task += f" -h {config['HOSTNAME']}"
 
         if config["BLOCKSIZE"]:
-            task += " -b {}".format(config["BLOCKSIZE"])
+            task += f" -b {config['BLOCKSIZE']}"
 
         command = util._make_bsub_command(task)
 
@@ -87,7 +83,8 @@ def generate_summary(config):
     indexed = sum([x[2] for x in data])
     missing = sum([x[3] for x in data])
     percent_missing = round((float(missing)/total)*100,2)
-    print("Total Files: {} Total Indexed: {} Total Missing: {} Percent Missing: {}".format(total, indexed, missing, percent_missing))
+    print(f"Total Files: {total} Total Indexed: {indexed} Total Missing: {missing} Percent Missing: {percent_missing}")
+
 
 def create_missing_list(config):
     print("Generating missing files list: {}".format(config["MISSING_FILE"]))
@@ -99,6 +96,7 @@ def create_missing_list(config):
     with open(config['MISSING_FILE'], 'w') as missing_log:
         missing_log.writelines(missing_files)
 
+
 def nolotus(config):
     if config["--report"]:
         return True
@@ -106,6 +104,7 @@ def nolotus(config):
         return True
     else:
         return False
+
 
 def main():
     # Parse the command line arguments
@@ -116,15 +115,15 @@ def main():
 
         files = os.listdir(config["DIR"])
         total_files = len(files)
-        pb = util.ProgressBar(total_files, label="Running jobs")
+        pb = utils.ProgressBar(total_files, label="Running jobs")
 
         submit_jobs_to_lotus(files,config)
-        remaining_jobs = util.get_number_of_submitted_lotus_tasks()
+        remaining_jobs = utils.get_number_of_submitted_lotus_tasks()
 
         while remaining_jobs > 0:
             pb.running(total_files-remaining_jobs)
             sleep(5)
-            remaining_jobs = util.get_number_of_submitted_lotus_tasks()
+            remaining_jobs = utils.get_number_of_submitted_lotus_tasks()
 
         pb.complete()
 
