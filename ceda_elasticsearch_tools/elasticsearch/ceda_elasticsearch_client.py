@@ -33,7 +33,7 @@ class CEDAElasticsearchClient(Elasticsearch):
         :param kwargs:
         """
 
-        super().__init__(
+        super(CEDAElasticsearchClient, self).__init__(
             hosts=hosts,
             use_ssl=use_ssl,
             ca_certs=ca_certs,
