@@ -23,7 +23,7 @@ class CEDAElasticsearchClient(Elasticsearch):
     certificate for the cluster
     """
 
-    def __init__(self,hosts=[f'es{i}.ceda.ac.uk:9200' for i in range(9,17)], use_ssl=True, ca_certs=CA_ROOT, **kwargs):
+    def __init__(self,hosts=['es%s.ceda.ac.uk:9200' % i for i in range(9,17)], use_ssl=True, ca_certs=CA_ROOT, **kwargs):
         """
         Return elasticsearch client object but always use SSL and
         provide the cluster root certificate
@@ -33,7 +33,7 @@ class CEDAElasticsearchClient(Elasticsearch):
         :param kwargs:
         """
 
-        super().__init__(
+        super(CEDAElasticsearchClient, self).__init__(
             hosts=hosts,
             use_ssl=use_ssl,
             ca_certs=ca_certs,
