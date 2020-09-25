@@ -15,6 +15,18 @@ from ceda_elasticsearch_tools.index_tools.base import IndexUpdaterBase
 class CedaFbi(IndexUpdaterBase):
     """
     Class to aide in updating and managing the ceda-fbi index.
+
+    Usage:
+
+    This setup will connect to CEDAs Elasticsearch cluster in a round
+    robin. Adding the API key will also allow the actions associated with
+    the API key.
+
+    fbi = CedaFbi(
+        headers = {
+            'x-api-key': 'YOUR-API-KEY'
+        }
+    )
     """
 
     type = "file"
