@@ -20,7 +20,18 @@ CA_ROOT = os.path.abspath(
 class CEDAElasticsearchClient(Elasticsearch):
     """
     Wrapper class to handle SSL authentication with the correct root
-    certificate for the cluster
+    certificate for the cluster. This subclass provides defaults for kwargs from
+    the main Elasticsearch Python client.
+    
+    For read use cases, where the indices of interest are publically available, it will be sufficient to call:
+    
+    es = CEDAElasticsearchClient()
+    
+    For application access, which requires write permissions, you will need to provide an API key. This can be done:
+    
+    es =  CEDAElasticsearchClient(headers={'x-api-key':'YOUR-API-KEY'})
+    
+    For further customisations see the Python Elasticsearch client documentation
     """
 
     def __init__(self,hosts=['es%s.ceda.ac.uk:9200' % i for i in range(9,17)], use_ssl=True, ca_certs=CA_ROOT, **kwargs):
