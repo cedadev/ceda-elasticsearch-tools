@@ -67,7 +67,6 @@ class SpotMapping(object):
             self.spot2pathmapping[spot] = path
             self.path2spotmapping[path] = spot
 
-
     def get_archive_root(self, key):
         """
 
@@ -125,7 +124,7 @@ class SpotMapping(object):
             suffix = storage_suffix.split(spot + '/')[1]
 
         except IndexError:
-            logging.error("Error getting spot from: {}".format(path))
+            logging.warning("Error getting spot from: {}".format(path))
 
         return spot, suffix
 
