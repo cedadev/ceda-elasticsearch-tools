@@ -342,7 +342,7 @@ class CedaDirs(IndexUpdaterBase):
         """
 
         # Generate action list
-        bulk_operations = self._generate_bulk_operation_body(directories)
+        bulk_operations = self._generate_bulk_operation_body(directories, action="update")
 
         # Perform bulk action
         return self._bulk_action(bulk_operations)
