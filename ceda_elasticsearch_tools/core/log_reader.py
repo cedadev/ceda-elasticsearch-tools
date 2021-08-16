@@ -119,7 +119,7 @@ class SpotMapping(object):
         spot, suffix = None, None
 
         try:
-            storage_suffix = path.split('archive/')[1]
+            storage_suffix = path.split('/archive/')[1]
             spot = storage_suffix.split('/')[0]
             suffix = storage_suffix.split(spot + '/')[1]
 
