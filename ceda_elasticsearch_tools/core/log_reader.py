@@ -99,8 +99,9 @@ class SpotMapping(object):
 
         archive_path = self.get_archive_path(key)
 
-        while (archive_path not in self.path2spotmapping) and (archive_path != '/'):
-            archive_path = os.path.dirname(archive_path)
+        if archive_path:
+            while (archive_path not in self.path2spotmapping) and (archive_path != '/'):
+                archive_path = os.path.dirname(archive_path)
 
         if archive_path == '/' or archive_path is None:
             return None
