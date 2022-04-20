@@ -49,6 +49,11 @@ class SpotMapping(object):
         """
 
         response = requests.get(self.url)
+
+        if response.status_code != 200:
+            logging.error("Error getting mapping from cedaarchiveapp status code: {}, reason: {}".format(response.status_code, response.reason))
+            raise Exception("bad response status code: {}, reason: {}".format(response.status_code, response.reason))
+
         spot_mapping = response.text.split('\n')
 
         self._build_mapping(spot_mapping)
