@@ -24,6 +24,8 @@ class SpotMapping(object):
 
     def __init__(self, test=False, spot_file=None, sep='='):
 
+        logging.info("Initialising spots mapping with test: {} and spot file: {}".format(test, spot_file))
+
         if test:
             self.spot2pathmapping['spot-1400-accacia'] = "/badc/accacia"
             self.spot2pathmapping['abacus'] = "/badc/abacus"
@@ -47,6 +49,8 @@ class SpotMapping(object):
         """
         Download the mapping from the cedaarchiveapp and build mappings.
         """
+
+        logging.info("Downloading spots from {}".format(self.url))
 
         response = requests.get(self.url)
 
