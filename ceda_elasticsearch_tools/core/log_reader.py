@@ -86,13 +86,6 @@ class SpotMapping(object):
         # Get the path to the spot
         archive_root = self.spot2pathmapping.get(key)
 
-        # If key not found, refresh the mapping and try again
-        # If still not found, this will return None
-        if archive_root is None:
-            self._download_mapping()
-
-            archive_root = self.spot2pathmapping.get(key)
-
         return archive_root
 
     def get_spot(self, key):
