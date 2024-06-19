@@ -1,0 +1,1 @@
+from .elasticsearch.ceda_elasticsearch_client import CEDAElasticsearchClient
