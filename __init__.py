@@ -1,1 +1,3 @@
 from ceda_elasticsearch_tools.elasticsearch.ceda_elasticsearch_client import CEDAElasticsearchClient
+from ceda_elasticsearch_tools.index_tools.base import IndexUpdaterBase
+from ceda_elasticsearch_tools.index_tools.ceda_client import BulkClient
