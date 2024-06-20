@@ -34,6 +34,9 @@ class BulkClient(IndexUpdaterBase):
 
         super().__init__(index, **connection_kwargs)
 
+        if not self.es.indices.exists(index):
+            self.es.indices.create(index)
+
     def obtain_records(self):
         search = {
             "query": {
