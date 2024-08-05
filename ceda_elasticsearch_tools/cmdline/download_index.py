@@ -18,6 +18,7 @@ Options:
     -o  --output        Script output directory.
     -h  --hostname      Elasticsearch host to query [default: elasticsearch.ceda.ac.uk]
     -s  --size          Number of records per query [default: 10000]
+    -a  --api-key       API key for Elasticsearch.
 """
 
 import json
@@ -57,13 +58,9 @@ def main():
 
     record_count = 0
     file_count = 0
-    loop_count = 0
 
     while True:
         result = search(es, config, search_after)
-
-        if loop_count > 1:
-            break
 
         if not result["hits"]["hits"]:
             break
@@ -81,7 +78,6 @@ def main():
                 file_count += 1
 
         search_after = [result["hits"]["hits"][-1]["_id"]]
-        loop_count += 1
 
     print(
         f"Total Records: {record_count} Total Files created: {file_count} Total Missed: {record_count - file_count} Percent Missing: {((record_count - file_count)/record_count)*100}%"
