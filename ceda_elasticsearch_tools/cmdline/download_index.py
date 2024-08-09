@@ -100,7 +100,7 @@ def main():
 
     es = CEDAElasticsearchClient(headers={"x-api-key": config["API_KEY"]})
 
-    if config["MAPPING"]:
+    if config["--mapping"] or config["-m"]:
         get_mapping(es, config)
 
     records(es, config)
