@@ -64,7 +64,7 @@ def get_mapping(es, config):
 
     mapping_path = os.path.join(config["OUTPUT"], "mapping.json")
 
-    dump(mapping, mapping_path)
+    dump(mapping_path, mapping)
 
     print("Mapping saved")
 
@@ -83,8 +83,8 @@ def records(es, config):
 
         for record in result["hits"]["hits"]:
             record_count += 1
-            file_path = os.path.join(config["OUTPUT"], record["_id"])
-            dump(record, file_path)
+            file_path = os.path.join(config["OUTPUT"], f"{record['_id']}.json")
+            dump(file_path, record)
             file_count += 1
 
         search_after = [result["hits"]["hits"][-1]["_id"]]
