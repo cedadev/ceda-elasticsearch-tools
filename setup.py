@@ -24,7 +24,7 @@ setup(
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
 
-    version='2.3.2',
+    version='2.3.3',
 
     description='Extension of the basic elasticsearch python wrapper to perform operations with a given ES index.',
     long_description=long_description,
@@ -77,7 +77,8 @@ setup(
     install_requires=[
         'requests',
         'elasticsearch<8.0.0',
-        'docopt'
+        'docopt',
+        'tqdm'
     ],
 
     # To provide executable scripts, use entry points in preference to the
