@@ -34,7 +34,7 @@ class CEDAElasticsearchClient(Elasticsearch):
     For further customisations see the Python Elasticsearch client documentation
     """
 
-    def __init__(self,hosts=['es%s.ceda.ac.uk:9200' % i for i in range(9,17)], use_ssl=True, ca_certs=CA_ROOT, **kwargs):
+    def __init__(self,hosts=['es%s.ceda.ac.uk:9200' % i for i in range(0,9)], use_ssl=True, ca_certs=CA_ROOT, **kwargs):
         """
         Return elasticsearch client object but always use SSL and
         provide the cluster root certificate
