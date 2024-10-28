@@ -45,6 +45,7 @@ idna = "^3.10"
 urllib3 = "^2.2.3"
 simplejson = "^3.19.3"
 tabulate = "^0.9.0"
+setuptools = "^75.2.0"
 
 [tool.poetry.scripts]
 nla_sync_es = "ceda_elasticsearch_tools.cmdline.nla_sync_es:main"
@@ -62,7 +63,6 @@ spot_checker = "ceda_elasticsearch_tools.cmdline.secondary_scripts.spot_checker:
 fbs_live_index = "ceda_elasticsearch_tools.cmdline.fbs_live_index:main"
 
 coverage_test = "ceda_elasticsearch_tools.cmdline.ceda_eo.coverage_test:main"
-        
 
 [build-system]
 requires = ["poetry-core"]
