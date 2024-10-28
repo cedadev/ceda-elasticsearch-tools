@@ -5,7 +5,9 @@ description = "Extension of the basic elasticsearch python wrapper to perform op
 authors = ["Rhys Evans <rhys.evans@stfc.ac.uk>, Daniel Westwood <daniel.westwood@stfc.ac.uk>, Neil Massey <neil.massey@stfc.ac.uk>"]
 license = "{file='LICENSE'}"
 readme = "README.md"
-url = 'https://github.com/cedadev/ceda-elasticsearch-tools.git'
+
+[project.urls]
+Repository = "https://github.com/cedadev/ceda-elasticsearch-tools.git"
 
 classifiers = [
     # How mature is this project? Common values are
