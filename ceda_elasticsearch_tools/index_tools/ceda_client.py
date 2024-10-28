@@ -62,6 +62,12 @@ class BulkClient(IndexUpdaterBase):
         return ids
 
     def upload(self, action, content_list):
+        """
+        Upload from the content list given a specific action.
+        E.g 'add', 'update' etc.
+        """
+
+        content_list = self._preprocess_records(content_list)
         action_list = self._generate_bulk_operation_body(
             content_list,
             action=action
@@ -91,3 +97,10 @@ class BulkClient(IndexUpdaterBase):
             self.upload('update', update)
         if len(add) > 0:
             self.upload('index', add)
+
+    def _preprocess_records(self, content_list):
+        """
+        Method to override for inserting perprocessing
+        to the list of records
+        """
+        return content_list
