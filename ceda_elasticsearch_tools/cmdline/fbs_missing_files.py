@@ -35,7 +35,7 @@ import re
 import os
 from ceda_elasticsearch_tools.core import utils
 import subprocess
-from ceda_elasticsearch_tools.cmdline import __version__
+from ceda_elasticsearch_tools import __version__
 from time import sleep
 from tqdm import tqdm
 

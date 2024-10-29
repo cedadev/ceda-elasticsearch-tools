@@ -15,13 +15,11 @@ Options:
 from docopt import docopt
 
 import simplejson as json
-from ceda_elasticsearch_tools.cmdline import __version__
+from ceda_elasticsearch_tools import __version__
 import os
 import re
 from ceda_elasticsearch_tools.core.updater import  ElasticsearchUpdater, ElasticsearchQuery
-from ceda_elasticsearch_tools.core import util
-
-
+from ceda_elasticsearch_tools.core import utils
 
 def main():
     base = os.path.dirname(__file__)
@@ -71,7 +69,7 @@ def main():
 
         print(f"Group: {group} Total files: {len(file_list)}"
                f" Files in: {len(results['True'])} Files out: {len(results['False'])}"
-               f" Coverage: {util.percent(len(file_list),len(results['True']))}")
+               f" Coverage: {utils.percent(len(file_list),len(results['True']))}")
 
 
 

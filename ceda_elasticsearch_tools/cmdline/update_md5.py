@@ -33,12 +33,12 @@ from docopt import docopt
 from ceda_elasticsearch_tools.core import log_reader
 from datetime import datetime
 import os, logging
-from ceda_elasticsearch_tools.cmdline import __version__
+from ceda_elasticsearch_tools import __version__
 import subprocess
 import simplejson as json
 from ceda_elasticsearch_tools.core.updater import ElasticsearchUpdater
 import math
-from ceda_elasticsearch_tools.core.util import ProgressBar
+from ceda_elasticsearch_tools.core.utils import ProgressBar
 
 
 def logger_setup(log_dir):
