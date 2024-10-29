@@ -6,9 +6,6 @@ authors = ["Rhys Evans <rhys.evans@stfc.ac.uk>, Daniel Westwood <daniel.westwood
 license = "{file='LICENSE'}"
 readme = "README.md"
 
-[project.urls]
-Repository = "https://github.com/cedadev/ceda-elasticsearch-tools.git"
-
 classifiers = [
     # How mature is this project? Common values are
     #   3 - Alpha
@@ -32,6 +29,10 @@ classifiers = [
 include = [
     { path = 'root_certificate/root-ca.pem' }
 ]
+
+[project.urls]
+Repository = "https://github.com/cedadev/ceda-elasticsearch-tools.git"
+
 
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0"
