@@ -27,7 +27,7 @@ Options:
 from docopt import docopt
 
 import requests
-import pkg_resources
+from ceda_elasticsearch_tools import __version__
 from time import sleep
 import itertools, sys
 from multiprocessing import Process
@@ -122,7 +122,7 @@ def main():
     """
 
     # Get command line arguments
-    args = docopt(__doc__, version=pkg_resources.require("ceda_elasticsearch_tools")[0].version)
+    args = docopt(__doc__, version=__version__)
 
     if not args["--host"]:
         host = "jasmin-es1.ceda.ac.uk"

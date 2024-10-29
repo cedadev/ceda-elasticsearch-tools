@@ -27,7 +27,7 @@ from docopt import docopt
 import os
 import simplejson as json
 from elasticsearch import Elasticsearch
-from ceda_elasticsearch_tools.cmdline import __version__
+from ceda_elasticsearch_tools import __version__
 import hashlib
 
 

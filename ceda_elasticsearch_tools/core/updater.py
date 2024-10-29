@@ -2,10 +2,11 @@ import os
 import json
 import re
 import logging
-from log_reader import MD5LogFile
-import utils
 import hashlib
+
 from ceda_elasticsearch_tools.elasticsearch import CEDAElasticsearchClient
+from .log_reader import MD5LogFile
+from . import utils
 
 class ElasticsearchQuery(object):
     """

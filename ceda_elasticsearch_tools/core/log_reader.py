@@ -3,10 +3,9 @@ import os
 import re
 import hashlib
 from datetime import datetime
-from ceda_elasticsearch_tools.core.utils import get_latest_log
-
 import logging
 
+from ceda_elasticsearch_tools.core.utils import get_latest_log
 
 class SpotMapping(object):
     """

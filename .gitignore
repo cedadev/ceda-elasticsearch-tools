@@ -5,3 +5,4 @@
 venv/
 data/
 test_code/
+.venv/

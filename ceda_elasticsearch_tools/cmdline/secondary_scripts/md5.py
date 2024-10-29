@@ -32,7 +32,7 @@ from docopt import docopt
 from ceda_elasticsearch_tools.core import updater
 from datetime import datetime
 import os, logging
-from ceda_elasticsearch_tools.cmdline import __version__
+from ceda_elasticsearch_tools import __version__
 import hashlib
 import simplejson as json
 
