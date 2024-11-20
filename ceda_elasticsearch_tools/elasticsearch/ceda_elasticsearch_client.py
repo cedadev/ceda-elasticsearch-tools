@@ -47,7 +47,7 @@ class CEDAElasticsearchClient(Elasticsearch):
         prefix = "https://" if use_ssl else "http://"
 
         # Add scheme to hosts if not included
-        hosts = [f"{prefix}{host.split("://", 1)[1]}" if host.startswith(("http://", "https://")) else f"{prefix}{host}" for host in hosts]
+        hosts = [f"{prefix}{host.split('://', 1)[1]}" if host.startswith(("http://", "https://")) else f"{prefix}{host}" for host in hosts]
 
         print("#\n" * 5)
         print(hosts)
