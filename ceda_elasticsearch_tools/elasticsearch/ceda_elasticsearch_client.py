@@ -10,6 +10,7 @@ __contact__ = 'richard.d.smith@stfc.ac.uk'
 
 from elasticsearch import Elasticsearch
 import os
+import warnings
 
 CA_ROOT = os.path.abspath(
             os.path.join(
@@ -23,7 +24,7 @@ class CEDAElasticsearchClient(Elasticsearch):
     certificate for the cluster. This subclass provides defaults for kwargs from
     the main Elasticsearch Python client.
     
-    For read use cases, where the indices of interest are publically available, it will be sufficient to call:
+    For read use cases, where the indices of interest are publicly available, it will be sufficient to call:
     
     es = CEDAElasticsearchClient()
     
@@ -31,10 +32,10 @@ class CEDAElasticsearchClient(Elasticsearch):
     
     es =  CEDAElasticsearchClient(headers={'x-api-key':'YOUR-API-KEY'})
     
-    For further customisations see the Python Elasticsearch client documentation
+    For further customizations, see the Python Elasticsearch client documentation.
     """
 
-    def __init__(self,hosts=['es%s.ceda.ac.uk:9200' % i for i in range(1,9)], use_ssl=True, ca_certs=CA_ROOT, **kwargs):
+    def __init__(self, hosts=['es%s.ceda.ac.uk:9200' % i for i in range(1,9)], use_ssl=True, ca_certs=CA_ROOT, **kwargs): # ca_certs=None, headers=None, verify_certs=True, scheme="https", **kwargs
         """
         Return elasticsearch client object but always use SSL and
         provide the cluster root certificate
@@ -44,9 +45,13 @@ class CEDAElasticsearchClient(Elasticsearch):
         :param kwargs:
         """
 
+        # Add scheme to hosts if not included
+        hosts = [host if host.startswith(("http://", "https://")) else (f"https://{host}" if use_ssl else f"http://{host}") for host in hosts]
+
+
+
         super(CEDAElasticsearchClient, self).__init__(
             hosts=hosts,
-            use_ssl=use_ssl,
             ca_certs=ca_certs,
             **kwargs
         )
