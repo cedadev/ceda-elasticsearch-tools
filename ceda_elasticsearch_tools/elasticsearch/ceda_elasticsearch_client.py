@@ -44,9 +44,10 @@ class CEDAElasticsearchClient(Elasticsearch):
         :param ca_certs: Certificate authority root certificates. Default: CEDA Cluster root certs (set None to disable)
         :param kwargs:
         """
+        prefix = "https://" if use_ssl else "http://"
 
         # Add scheme to hosts if not included
-        hosts = [host if host.startswith(("http://", "https://")) else (f"https://{host}" if use_ssl else f"http://{host}") for host in hosts]
+        hosts = [f"{prefix}{host.split("://", 1)[1]}" if host.startswith(("http://", "https://")) else f"{prefix}{host}" for host in hosts]
 
         print("#\n" * 5)
         print(hosts)
