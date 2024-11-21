@@ -51,7 +51,11 @@ class CEDAElasticsearchClient(Elasticsearch):
 
         print("#\n" * 5)
         print(hosts)
+        print(ca_certs)
+        print(kwargs)
         print("#\n" * 5)
+
+
 
 
         super(CEDAElasticsearchClient, self).__init__(
