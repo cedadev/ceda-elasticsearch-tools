@@ -49,15 +49,6 @@ class CEDAElasticsearchClient(Elasticsearch):
         # Add scheme to hosts if not included
         hosts = [f"{prefix}{host.split('://', 1)[1]}" if host.startswith(("http://", "https://")) else f"{prefix}{host}" for host in hosts]
 
-        print("#\n" * 5)
-        print(hosts)
-        print(ca_certs)
-        print(kwargs)
-        print("#\n" * 5)
-
-
-
-
         super(CEDAElasticsearchClient, self).__init__(
             hosts=hosts,
             ca_certs=ca_certs,
