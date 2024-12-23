@@ -35,19 +35,19 @@ Repository = "https://github.com/cedadev/ceda-elasticsearch-tools.git"
 
 
 [tool.poetry.dependencies]
-python
-requests
-elasticsearch
-docopt
-tqdm
-certifi
-chardet
-idna
-urllib3
-simplejson
-tabulate
-setuptools
-pytest
+python = "*"
+requests = "*"
+elasticsearch = "*"
+docopt = "*"
+tqdm = "*"
+certifi = "*"
+chardet = "*"
+idna = "*"
+urllib3 = "*"
+simplejson = "*"
+tabulate = "*"
+setuptools = "*"
+pytest = "*"
 
 [tool.poetry.scripts]
 nla_sync_es = "ceda_elasticsearch_tools.cmdline.nla_sync_es:main"
