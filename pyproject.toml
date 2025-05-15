@@ -37,7 +37,7 @@ Repository = "https://github.com/cedadev/ceda-elasticsearch-tools.git"
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0"
 requests = "^2.32.3"
-elasticsearch = "^7"
+elasticsearch = "^8"
 docopt = "^0.6.2"
 tqdm = "^4.66.5"
 certifi = "^2024.8.30"
